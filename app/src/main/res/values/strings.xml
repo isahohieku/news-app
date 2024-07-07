@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NewsApp</string>
+    <string name="no_news_at_the_moment_please_check_again_later">No news at the moment\nPlease check again later</string>
+</resources>
