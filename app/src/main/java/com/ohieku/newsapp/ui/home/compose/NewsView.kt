@@ -1,4 +1,4 @@
-package com.ohieku.newsapp.ui.components
+package com.ohieku.newsapp.ui.home.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,9 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ohieku.newsapp.R
-import com.ohieku.newsapp.data.entity.Article
-import com.ohieku.newsapp.data.entity.NewsResponse
-import com.ohieku.newsapp.ui.theme.Purple40
+import com.ohieku.newsapp.data.features.news.model.Article
+import com.ohieku.newsapp.ui.compose.theme.Red100
 
 @Composable
 fun Loader() {
@@ -48,26 +45,16 @@ fun Loader() {
             modifier = Modifier
                 .size(60.dp)
                 .padding(10.dp),
-            color = Purple40
+            color = Red100
         )
     }
 }
 
 @Composable
-fun NewsList(response: NewsResponse) {
-    LazyColumn {
-        items(response.articles) {
-
-        }
-    }
-}
-
-@Composable
-fun NewsRowComponent(page: Int, article: Article) {
+fun NewsRowComponent(page: Int, article: com.ohieku.newsapp.data.features.news.model.Article, total: Int) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
             .background((Color.White))
     ) {
         AsyncImage(
@@ -91,7 +78,7 @@ fun NewsRowComponent(page: Int, article: Article) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        FooterDetail(article.author?: "", article.source?.name?: "")
+        FooterDetail(article.author?: "", article.source?.name?: "", page, total)
     }
 }
 
@@ -101,7 +88,7 @@ fun HeaderText(text: String, centerText: Boolean = false) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(8.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         text = text,
         style = TextStyle(
             fontSize = 24.sp,
@@ -117,7 +104,7 @@ fun ContextText(text: String) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(8.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         text = text,
         style = TextStyle(
             fontSize = 18.sp,
@@ -127,15 +114,17 @@ fun ContextText(text: String) {
 }
 
 @Composable
-fun FooterDetail(author: String, url: String) {
+fun FooterDetail(author: String, url: String, page: Int, total: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Text(text = author)
         Spacer(modifier = Modifier.weight(1f))
-        Text(text = url)
+        Text(
+            text = author,
+            color = Color.Red,
+        )
     }
 }
 
@@ -175,5 +164,5 @@ fun NewsRowPreviewComponent() {
         null,
         null
     )
-    NewsRowComponent(0, article)
+    NewsRowComponent(0, article, 1)
 }

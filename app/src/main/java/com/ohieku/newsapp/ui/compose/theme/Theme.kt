@@ -1,4 +1,4 @@
-package com.ohieku.newsapp.ui.theme
+package com.ohieku.newsapp.ui.compose.theme
 
 import android.app.Activity
 import android.os.Build
@@ -22,7 +22,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Red100,
     secondary = PurpleGrey40,
     tertiary = Pink40
 
@@ -57,7 +57,7 @@ fun NewsAppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = Red100.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

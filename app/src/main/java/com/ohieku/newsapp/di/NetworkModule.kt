@@ -1,10 +1,7 @@
 package com.ohieku.newsapp.di
 
-import com.ohieku.newsapp.data.AppConstants
-import com.ohieku.newsapp.data.api.ApiService
-import com.ohieku.newsapp.data.datasource.NewsDataSource
-import com.ohieku.newsapp.data.datasource.NewsDataSourceImplementation
-import com.ohieku.newsapp.ui.repository.NewsRepository
+import com.ohieku.newsapp.core.AppConstants
+import com.ohieku.newsapp.data.features.news.NewsApi
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -20,10 +17,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class AppModule {
-
-    @Provides
-    @Singleton
+object NetworkModule {
+    @[Provides Singleton]
     fun providesRetrofit(): Retrofit {
         val httpLoginInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
@@ -48,21 +43,8 @@ class AppModule {
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun providesApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create((ApiService::class.java))
-    }
-
-    @Provides
-    @Singleton
-    fun providesNewsDataSource(apiService: ApiService): NewsDataSource {
-        return NewsDataSourceImplementation(apiService)
-    }
-
-    @Provides
-    @Singleton
-    fun providesNewsRepository(newsDataSource: NewsDataSource): NewsRepository {
-        return NewsRepository(newsDataSource)
+    @[Provides Singleton]
+    fun providesApiService(retrofit: Retrofit): NewsApi {
+        return retrofit.create((NewsApi::class.java))
     }
 }

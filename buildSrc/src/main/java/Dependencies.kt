@@ -1,5 +1,6 @@
 object Dependencies {
     val coreKtx by lazy { "androidx.core:core-ktx:${Versions.coreKtx}" }
+    val appCompat by lazy { "androidx.appcompat:appcompat:${Versions.appCompat}" }
     val lifecycleRuntimeKtx by lazy { "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycleRuntimeKtx}" }
     val activityCompose by lazy { "androidx.activity:activity-compose:${Versions.activityCompose}" }
     val composeBom by lazy { "androidx.compose:compose-bom:${Versions.composeBom}" }
@@ -33,6 +34,11 @@ object Dependencies {
     val splashScreen by lazy { "androidx.core:core-splashscreen:${Versions.splashScreen}"}
 
     val coil by lazy { "io.coil-kt:coil-compose:${Versions.coil}"}
+    val fragment by lazy { "androidx.fragment:fragment-ktx:${Versions.fragment}"}
+    val fragmentNavigation by lazy { "androidx.navigation:navigation-fragment:${Versions.fragmentNavigation}"}
+    val constraintsLayout by lazy { "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}" }
+    val navigationUi by lazy { "androidx.navigation:navigation-ui-ktx:${Versions.navigationUi}" }
+    val navigationRuntime by lazy { "androidx.navigation:navigation-runtime-ktx:${Versions.navigationRuntime}" }
 }
 
 object Modules {

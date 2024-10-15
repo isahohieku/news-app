@@ -43,6 +43,8 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        dataBinding = true
+        viewBinding = true
         compose = true
     }
     composeOptions {
@@ -56,10 +58,14 @@ android {
 }
 
 dependencies {
-
     implementation(Dependencies.coreKtx)
     implementation(Dependencies.lifecycleRuntimeKtx)
     implementation(Dependencies.activityCompose)
+    implementation(Dependencies.fragment)
+    implementation(Dependencies.fragmentNavigation)
+    implementation(Dependencies.navigationUi)
+    implementation(Dependencies.navigationRuntime)
+    implementation(Dependencies.constraintsLayout)
     implementation(platform(Dependencies.composeBom))
     implementation(Dependencies.composeUi)
     implementation(Dependencies.composeUiGraphics)
@@ -72,8 +78,6 @@ dependencies {
     androidTestImplementation(Dependencies.composeUiTestJUnit)
     debugImplementation(Dependencies.composeUiTooling)
     debugImplementation(Dependencies.composeUiTestManifest)
-
-    implementation(project(Modules.utilities))
 
     implementation(Dependencies.hiltAndroid)
     kapt(Dependencies.hiltCompiler)
@@ -94,6 +98,9 @@ dependencies {
     implementation(Dependencies.splashScreen)
 
     implementation(Dependencies.coil)
+
+    implementation(project(Modules.utilities))
+
 }
 
 kapt {
