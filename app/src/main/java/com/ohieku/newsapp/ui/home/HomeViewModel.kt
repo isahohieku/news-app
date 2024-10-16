@@ -1,6 +1,5 @@
 package com.ohieku.newsapp.ui.home
 
-import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
