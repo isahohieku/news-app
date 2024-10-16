@@ -1,5 +1,6 @@
 object Versions {
     const val coreKtx = "1.12.0"
+    const val appCompat = "1.6.1"
     const val lifecycleRuntimeKtx = "2.7.0"
     const val activityCompose = "1.8.2"
     const val composeBom = "2023.08.00"
@@ -25,4 +26,9 @@ object Versions {
     const val coroutines = "1.7.3"
     const val splashScreen = "1.0.1"
     const val coil = "2.2.0"
+    const val fragment = "1.8.4"
+    const val fragmentNavigation = "2.8.2"
+    const val constraintLayout = "2.1.4"
+    const val navigationUi = "2.7.0"
+    const val navigationRuntime = "2.7.0"
 }
