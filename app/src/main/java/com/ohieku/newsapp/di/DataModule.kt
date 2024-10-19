@@ -1,5 +1,6 @@
 package com.ohieku.newsapp.di
 
+import com.ohieku.newsapp.core.provider.LocaleProvider
 import com.ohieku.newsapp.data.features.news.datasource.NewsDataSource
 import com.ohieku.newsapp.data.features.news.repository.NewsRepositoryImplementation
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
@@ -14,6 +15,6 @@ import javax.inject.Singleton
 object DataModule {
 
     @[Provides Singleton]
-    fun providesNewsRepository(newsDataSource: NewsDataSource): NewsRepository =
-        NewsRepositoryImplementation(newsDataSource)
+    fun providesNewsRepository(newsDataSource: NewsDataSource, localeProvider: LocaleProvider): NewsRepository =
+        NewsRepositoryImplementation(newsDataSource, localeProvider)
 }
