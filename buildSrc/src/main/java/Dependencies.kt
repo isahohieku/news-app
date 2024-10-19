@@ -5,6 +5,8 @@ object Dependencies {
     val activityCompose by lazy { "androidx.activity:activity-compose:${Versions.activityCompose}" }
     val composeBom by lazy { "androidx.compose:compose-bom:${Versions.composeBom}" }
     val composeUi by lazy { "androidx.compose.ui:ui:${Versions.composeUi}"}
+    val composeConstraintLayout by lazy { "androidx.constraintlayout:constraintlayout-compose:${Versions.composeConstraintLayout}"}
+    val constraintLayout by lazy { "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}"}
     val composeUiGraphics by lazy { "androidx.compose.ui:ui-graphics:${Versions.composeUiGraphics}"}
     val composeUiToolingPreview by lazy { "androidx.compose.ui:ui-graphics:${Versions.composeUiToolingPreview}"}
     val composeMaterial3 by lazy { "androidx.compose.material3:material3:${Versions.composeMaterial3}"}

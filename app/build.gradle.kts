@@ -61,6 +61,8 @@ dependencies {
     implementation(Dependencies.coreKtx)
     implementation(Dependencies.lifecycleRuntimeKtx)
     implementation(Dependencies.activityCompose)
+    implementation(Dependencies.constraintLayout)
+    implementation(Dependencies.composeConstraintLayout)
     implementation(Dependencies.fragment)
     implementation(Dependencies.fragmentNavigation)
     implementation(Dependencies.navigationUi)
