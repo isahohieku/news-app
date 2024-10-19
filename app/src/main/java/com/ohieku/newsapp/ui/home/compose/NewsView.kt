@@ -2,21 +2,25 @@ package com.ohieku.newsapp.ui.home.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -27,10 +31,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import com.ohieku.newsapp.R
 import com.ohieku.newsapp.data.features.news.model.Article
 import com.ohieku.newsapp.ui.compose.theme.Red100
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun Loader() {
@@ -51,34 +57,56 @@ fun Loader() {
 }
 
 @Composable
-fun NewsRowComponent(page: Int, article: com.ohieku.newsapp.data.features.news.model.Article, total: Int) {
-    Column(
+fun NewsRowComponent(page: Int, article: Article, total: Int) {
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val topColumnHeight = 240.dp
+    val bottomColumnHeight = screenHeight - topColumnHeight
+
+    ConstraintLayout(
         modifier = Modifier
             .fillMaxSize()
             .background((Color.White))
     ) {
-        AsyncImage(
-            model = article.urlToImage,
-            contentDescription = "",
+        val (topColumn, bottomColumn) = createRefs()
+
+        Column (
             modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp),
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.placeholder),
-            error = painterResource(id = R.drawable.placeholder)
-        )
+                .constrainAs(topColumn) {
+                    top.linkTo(parent.top)
+                }
+        ) {
+            AsyncImage(
+                model = article.urlToImage,
+                contentDescription = "",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(topColumnHeight),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.placeholder),
+                error = painterResource(id = R.drawable.placeholder)
+            )
+        }
 
-        Spacer(modifier = Modifier.size(20.dp))
+        Column (modifier = Modifier
+            .clip(shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
+            .background(color = Color.White)
+            .height(bottomColumnHeight)
+            .constrainAs(bottomColumn) {
+                top.linkTo(topColumn.bottom, margin = -(15).dp)
+            }
+        ) {
+            Spacer(modifier = Modifier.size(20.dp))
 
-        HeaderText(article.title?: "")
+            HeaderText(article.title?: "")
 
-        Spacer(modifier = Modifier.size(10.dp))
+            Spacer(modifier = Modifier.size(10.dp))
 
-        ContextText(article.description?: "")
+            ContextText(article.description?: "")
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
-        FooterDetail(article.author?: "", article.source?.name?: "", page, total)
+            FooterDetail(article.author?: "", article.source?.name?: "", page, total)
+        }
     }
 }
 
