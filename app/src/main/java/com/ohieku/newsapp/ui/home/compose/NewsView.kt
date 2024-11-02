@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import com.ohieku.newsapp.R
-import com.ohieku.newsapp.data.features.news.model.Article
 import com.ohieku.newsapp.ui.compose.theme.Red100
 import androidx.compose.ui.platform.LocalConfiguration
+import com.ohieku.newsapp.domain.features.news.model.Article
 
 @Composable
 fun Loader() {

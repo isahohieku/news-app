@@ -10,11 +10,11 @@ data class NewsDto(
     @Json(name = "totalResults")
     val totalResults: Int,
     @Json(name = "articles")
-    val articles: List<Article>
+    val articles: List<ArticleDto>
 )
 
 @JsonClass(generateAdapter = true)
-data class Article(
+data class ArticleDto(
     @Json(name = "author")
     val author: String?,
     @Json(name = "title")
@@ -30,11 +30,11 @@ data class Article(
     @Json(name = "content")
     val content: String?,
     @Json(name = "source")
-    val source: Source?
+    val source: SourceDto?
 )
 
 @JsonClass(generateAdapter = true)
-data class Source(
+data class SourceDto(
     @Json(name = "id")
     val id: String?,
     @Json(name = "name")

@@ -1,7 +1,5 @@
 package com.ohieku.newsapp.domain.features.news.model
 
-import com.ohieku.newsapp.data.features.news.model.Article
-
 data class NewsModel(
     val status: String,
     val totalResults: Int,
