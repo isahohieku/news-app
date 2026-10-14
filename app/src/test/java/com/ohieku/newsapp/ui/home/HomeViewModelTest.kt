@@ -6,6 +6,7 @@ import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -25,9 +26,11 @@ class HomeViewModelTest {
     private class FakeNewsRepository : NewsRepository {
         val requestedPages = mutableListOf<Int>()
         val results = ArrayDeque<ResourceState<NewsModel>>()
+        var gate: CompletableDeferred<Unit>? = null
 
         override suspend fun getNewsHeadline(page: Int): ResourceState<NewsModel> {
             requestedPages += page
+            gate?.await()
             return results.removeFirst()
         }
     }
@@ -117,5 +120,79 @@ class HomeViewModelTest {
             assertEquals(listOf("a", "b"), state.articles.map { it.title })
             assertEquals(2, state.currentPage)
         }
+    }
+
+    @Test
+    fun `next page is not requested while one is loading`() {
+        repository.results += success("a")
+        repository.results += success("b")
+        val viewModel = createViewModel()
+        val gate = CompletableDeferred<Unit>()
+        repository.gate = gate
+
+        viewModel.fetchNextPage()
+        viewModel.fetchNextPage()
+        viewModel.retry()
+
+        assertTrue(viewModel.uiState.value.isLoadingMore)
+        assertEquals(listOf(1, 2), repository.requestedPages)
+
+        gate.complete(Unit)
+
+        viewModel.uiState.value.let { state ->
+            assertFalse(state.isLoadingMore)
+            assertEquals(listOf("a", "b"), state.articles.map { it.title })
+        }
+    }
+
+    @Test
+    fun `empty page ends pagination`() {
+        repository.results += success("a")
+        repository.results += success(total = 0)
+        val viewModel = createViewModel()
+
+        viewModel.fetchNextPage()
+        viewModel.fetchNextPage()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(1, 2), repository.requestedPages)
+        assertTrue(state.endReached)
+        assertFalse(state.hasMorePages)
+        assertEquals(100, state.totalResults)
+        assertEquals(listOf("a"), state.articles.map { it.title })
+    }
+
+    @Test
+    fun `no request once every result is loaded`() {
+        repository.results += success("a", "b", total = 2)
+        val viewModel = createViewModel()
+
+        viewModel.fetchNextPage()
+
+        assertEquals(listOf(1), repository.requestedPages)
+    }
+
+    @Test
+    fun `scrolling does not refetch while an error is showing`() {
+        repository.results += success("a")
+        repository.results += failure("Too many requests, try again later")
+        val viewModel = createViewModel()
+
+        viewModel.fetchNextPage()
+        viewModel.fetchNextPage()
+
+        assertEquals(listOf(1, 2), repository.requestedPages)
+    }
+
+    @Test
+    fun `empty first page shows the empty state`() {
+        repository.results += success(total = 0)
+
+        val state = createViewModel().uiState.value
+
+        assertFalse(state.isLoading)
+        assertNull(state.errorMessage)
+        assertTrue(state.articles.isEmpty())
+        assertTrue(state.endReached)
     }
 }

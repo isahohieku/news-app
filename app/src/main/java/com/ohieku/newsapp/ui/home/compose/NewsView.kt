@@ -1,7 +1,9 @@
 package com.ohieku.newsapp.ui.home.compose
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,21 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,13 +31,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ohieku.newsapp.R
+import com.ohieku.newsapp.extensions.utils.parsePublishedAt
 import com.ohieku.newsapp.ui.compose.theme.PrimaryOrange
 import com.ohieku.newsapp.domain.features.news.model.Article
+import com.ohieku.newsapp.domain.features.news.model.Source
 
 @Composable
 fun Loader() {
@@ -61,11 +61,20 @@ fun Loader() {
 }
 
 @Composable
-fun NewsCardComponent(page: Int, article: Article, total: Int) {
+fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
+    val publishedAt = remember(article.publishedAt) { parsePublishedAt(article.publishedAt) }
+    val relativeTime = publishedAt?.let {
+        DateUtils.getRelativeTimeSpanString(it, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+    }
+    val sourceName = article.source?.name?.takeIf { it.isNotBlank() }
+    val footer = listOfNotNull(relativeTime, article.author?.takeIf { it.isNotBlank() }).joinToString(" • ")
+
     Card(
+        onClick = { onClick?.invoke() },
+        enabled = onClick != null,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White, disabledContainerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, disabledElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp)
@@ -83,14 +92,18 @@ fun NewsCardComponent(page: Int, article: Article, total: Int) {
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
-                // Category Tag
-                Text(
-                    text = "SPACE", // Mocked as we don't have category in Article model
-                    color = PrimaryOrange,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                // Source Tag
+                if (sourceName != null) {
+                    Text(
+                        text = sourceName.uppercase(),
+                        color = PrimaryOrange,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
 
                 // Headline
                 Text(
@@ -112,23 +125,14 @@ fun NewsCardComponent(page: Int, article: Article, total: Int) {
                 )
 
                 // Footer
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                if (footer.isNotEmpty()) {
                     Text(
-                        text = "1 hour ago • ${article.source?.name ?: article.author ?: "Unknown"}",
+                        text = footer,
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Filled.Place, contentDescription = "Bookmark", tint = Color.Gray)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = Color.Gray)
-                    }
                 }
             }
         }
@@ -215,6 +219,22 @@ fun ErrorState(message: String, onRetryTapped: () -> Unit) {
 }
 
 @Composable
+fun LoadMoreIndicator() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(24.dp),
+            color = PrimaryOrange,
+            strokeWidth = 2.dp
+        )
+    }
+}
+
+@Composable
 fun PageErrorFooter(message: String, onRetryTapped: () -> Unit) {
     Row(
         modifier = Modifier
@@ -252,12 +272,12 @@ fun NewsCardPreviewComponent() {
     val article = Article(
         author = "Mr X",
         title = "Hello, Dummy article",
-        "A rough talk about content",
-        "www.w3schools.com",
-        null,
-        null,
-        null,
-        null
+        description = "A rough talk about content",
+        url = "https://www.w3schools.com",
+        urlToImage = null,
+        publishedAt = "2026-10-13T19:06:00Z",
+        content = null,
+        source = Source(id = null, name = "The Verge")
     )
-    NewsCardComponent(0, article, 1)
+    NewsCardComponent(article, onClick = {})
 }

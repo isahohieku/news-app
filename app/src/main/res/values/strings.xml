@@ -2,4 +2,5 @@
     <string name="app_name">News App</string>
     <string name="no_news_at_the_moment_please_check_again_later">No news at the moment\nPlease check again later</string>
     <string name="retry">Retry</string>
+    <string name="no_browser_found">No app can open this link</string>
 </resources>
