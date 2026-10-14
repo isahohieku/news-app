@@ -10,7 +10,8 @@ object Dependencies {
     val composeUiGraphics by lazy { "androidx.compose.ui:ui-graphics:${Versions.composeUiGraphics}"}
     val composeUiToolingPreview by lazy { "androidx.compose.ui:ui-graphics:${Versions.composeUiToolingPreview}"}
     val composeMaterial3 by lazy { "androidx.compose.material3:material3:${Versions.composeMaterial3}"}
-    val jUnitTest by lazy { "junit:junit:4.13.2:${Versions.jUnitTest}"}
+    val composeMaterialIconsExtended by lazy { "androidx.compose.material:material-icons-extended" }
+    val jUnitTest by lazy { "junit:junit:${Versions.jUnitTest}"}
     val androidJunitTest by lazy { "androidx.test.ext:junit:${Versions.androidJunitTest}" }
     val androidTestEspresso by lazy { "androidx.test.espresso:espresso-core:${Versions.androidTestEspresso}" }
     val composeUiTooling by lazy { "androidx.compose.ui:ui-tooling:${Versions.composeUiTooling}"}
@@ -32,6 +33,7 @@ object Dependencies {
 
     val coroutinesCore by lazy { "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"}
     val coroutinesAndroid by lazy { "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"}
+    val coroutinesTest by lazy { "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.coroutines}"}
 
     val splashScreen by lazy { "androidx.core:core-splashscreen:${Versions.splashScreen}"}
 

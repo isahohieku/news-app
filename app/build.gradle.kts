@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,7 +8,13 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
-
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val newsApiKey: String = localProperties.getProperty("NEWS_API_KEY")
+    ?: System.getenv("NEWS_API_KEY")
+    ?: ""
 
 android {
     namespace = "com.ohieku.newsapp"
@@ -18,8 +26,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        val newsAppAPIKey = "d8a172c2040d4f65942ed4e8f22433ff"
-        buildConfigField("String", "API_KEY", "\"${newsAppAPIKey}\"")
+        buildConfigField("String", "API_KEY", "\"$newsApiKey\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -49,7 +56,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -74,7 +81,9 @@ dependencies {
     implementation(Dependencies.composeUiGraphics)
     implementation(Dependencies.composeUiToolingPreview)
     implementation(Dependencies.composeMaterial3)
+    implementation(Dependencies.composeMaterialIconsExtended)
     testImplementation(Dependencies.jUnitTest)
+    testImplementation(Dependencies.coroutinesTest)
     androidTestImplementation(Dependencies.androidJunitTest)
     androidTestImplementation(Dependencies.androidTestEspresso)
     androidTestImplementation(platform(Dependencies.composeBom))
