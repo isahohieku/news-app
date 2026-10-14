@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.ohieku.newsapp.R
 
 // Profile, search and the bottom navigation return once their screens exist
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,7 +24,7 @@ fun MainScaffold(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Central News",
+                        text = stringResource(R.string.app_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         letterSpacing = 1.sp

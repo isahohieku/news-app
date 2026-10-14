@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -21,6 +22,10 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = PrimaryOrange,
     background = DarkBackground,
     surface = SurfaceDark,
+    surfaceContainerLow = SurfaceDark,
+    onSurfaceVariant = GrayTextDark,
+    // Keep elevated cards neutral instead of tinting them with the brand orange
+    surfaceTint = Color.Transparent,
     onPrimary = TextLight,
     onSecondary = TextLight,
     onTertiary = TextLight,
@@ -34,6 +39,9 @@ private val LightColorScheme = lightColorScheme(
     tertiary = PrimaryOrange,
     background = LightBackground,
     surface = SurfaceLight,
+    surfaceContainerLow = LightBackground,
+    onSurfaceVariant = GrayText,
+    surfaceTint = Color.Transparent,
     onPrimary = TextLight,
     onSecondary = TextLight,
     onTertiary = TextLight,

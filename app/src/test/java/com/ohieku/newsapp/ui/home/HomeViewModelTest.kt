@@ -2,6 +2,7 @@ package com.ohieku.newsapp.ui.home
 
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.data.network.ApiException
+import com.ohieku.newsapp.data.network.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
@@ -37,13 +38,13 @@ class HomeViewModelTest {
 
     private val repository = FakeNewsRepository()
 
-    private fun article(title: String) = Article(null, title, null, null, null, null, null, null)
+    private fun article(title: String) = Article(null, title, null, "https://example.com/$title", null, null, null, null)
 
     private fun success(vararg titles: String, total: Int = 100): ResourceState<NewsModel> =
         ResourceState.Success(NewsModel("ok", total, titles.map(::article)))
 
-    private fun failure(message: String): ResourceState<NewsModel> =
-        ResourceState.Error(ApiException(message))
+    private fun failure(type: ErrorType): ResourceState<NewsModel> =
+        ResourceState.Error(ApiException(type))
 
     private fun createViewModel() = HomeViewModel(GetNewsUseCase(repository))
 
@@ -65,26 +66,26 @@ class HomeViewModelTest {
 
         assertEquals(listOf(1), repository.requestedPages)
         assertFalse(state.isLoading)
-        assertNull(state.errorMessage)
+        assertNull(state.error)
         assertEquals(listOf("a", "b"), state.articles.map { it.title })
         assertEquals(1, state.currentPage)
     }
 
     @Test
     fun `first page failure stops loading and shows the error`() {
-        repository.results += failure("No Internet, please check and try again")
+        repository.results += failure(ErrorType.NoInternet)
 
         val state = createViewModel().uiState.value
 
         assertFalse(state.isLoading)
-        assertEquals("No Internet, please check and try again", state.errorMessage)
+        assertEquals(ErrorType.NoInternet, state.error)
         assertTrue(state.articles.isEmpty())
         assertEquals(0, state.currentPage)
     }
 
     @Test
     fun `retry after first page failure loads page one`() {
-        repository.results += failure("No Internet, please check and try again")
+        repository.results += failure(ErrorType.NoInternet)
         repository.results += success("a")
         val viewModel = createViewModel()
 
@@ -92,21 +93,21 @@ class HomeViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(listOf(1, 1), repository.requestedPages)
-        assertNull(state.errorMessage)
+        assertNull(state.error)
         assertEquals(listOf("a"), state.articles.map { it.title })
     }
 
     @Test
     fun `next page failure keeps articles and retry requests the same page`() {
         repository.results += success("a")
-        repository.results += failure("Too many requests, try again later")
+        repository.results += failure(ErrorType.RateLimited)
         repository.results += success("b")
         val viewModel = createViewModel()
 
         viewModel.fetchNextPage()
 
         viewModel.uiState.value.let { state ->
-            assertEquals("Too many requests, try again later", state.errorMessage)
+            assertEquals(ErrorType.RateLimited, state.error)
             assertEquals(listOf("a"), state.articles.map { it.title })
             assertEquals(1, state.currentPage)
             assertFalse(state.isLoading)
@@ -116,7 +117,7 @@ class HomeViewModelTest {
 
         viewModel.uiState.value.let { state ->
             assertEquals(listOf(1, 2, 2), repository.requestedPages)
-            assertNull(state.errorMessage)
+            assertNull(state.error)
             assertEquals(listOf("a", "b"), state.articles.map { it.title })
             assertEquals(2, state.currentPage)
         }
@@ -175,7 +176,7 @@ class HomeViewModelTest {
     @Test
     fun `scrolling does not refetch while an error is showing`() {
         repository.results += success("a")
-        repository.results += failure("Too many requests, try again later")
+        repository.results += failure(ErrorType.RateLimited)
         val viewModel = createViewModel()
 
         viewModel.fetchNextPage()
@@ -191,8 +192,26 @@ class HomeViewModelTest {
         val state = createViewModel().uiState.value
 
         assertFalse(state.isLoading)
-        assertNull(state.errorMessage)
+        assertNull(state.error)
         assertTrue(state.articles.isEmpty())
         assertTrue(state.endReached)
+    }
+
+    @Test
+    fun `articles repeated on a later page are dropped`() {
+        repository.results += success("a", "b")
+        repository.results += success("b", "c", "c")
+        val viewModel = createViewModel()
+
+        viewModel.fetchNextPage()
+
+        assertEquals(listOf("a", "b", "c"), viewModel.uiState.value.articles.map { it.title })
+    }
+
+    @Test
+    fun `unexpected exception type maps to unknown error`() {
+        repository.results += ResourceState.Error(IllegalStateException("boom"))
+
+        assertEquals(ErrorType.Unknown, createViewModel().uiState.value.error)
     }
 }

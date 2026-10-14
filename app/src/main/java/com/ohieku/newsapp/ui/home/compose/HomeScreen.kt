@@ -3,7 +3,7 @@ package com.ohieku.newsapp.ui.home.compose
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,7 +11,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.ohieku.newsapp.ui.common.messageRes
 import com.ohieku.newsapp.ui.home.HomeUiState
 import com.ohieku.newsapp.ui.compose.components.MainScaffold
 import com.ohieku.newsapp.ui.compose.components.OverviewSection
@@ -39,8 +41,8 @@ internal fun HomeScreen(
                     }
                 }
 
-                // Keyed on the article count so a short page that keeps the end in view still loads the next one
-                LaunchedEffect(isNearEnd, state.articles.size) {
+                // Keyed on the page so a short page that keeps the end in view still loads the next one
+                LaunchedEffect(isNearEnd, state.currentPage) {
                     if (isNearEnd) onFetchNextPageTapped()
                 }
 
@@ -54,7 +56,10 @@ internal fun HomeScreen(
                         OverviewSection()
                     }
 
-                    items(state.articles) { article ->
+                    itemsIndexed(
+                        items = state.articles,
+                        key = { index, article -> article.url ?: "no-url-$index" }
+                    ) { _, article ->
                         NewsCardComponent(
                             article = article,
                             onClick = article.url?.let { url -> { onArticleTapped(url) } }
@@ -65,15 +70,15 @@ internal fun HomeScreen(
                         item {
                             LoadMoreIndicator()
                         }
-                    } else if (state.errorMessage != null) {
+                    } else if (state.error != null) {
                         item {
-                            PageErrorFooter(state.errorMessage, onRetryTapped)
+                            PageErrorFooter(stringResource(state.error.messageRes()), onRetryTapped)
                         }
                     }
                 }
             }
 
-            state.errorMessage != null -> ErrorState(state.errorMessage, onRetryTapped)
+            state.error != null -> ErrorState(stringResource(state.error.messageRes()), onRetryTapped)
 
             else -> EmptyState()
         }

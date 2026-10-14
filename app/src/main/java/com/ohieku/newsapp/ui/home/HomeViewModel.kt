@@ -1,6 +1,9 @@
 package com.ohieku.newsapp.ui.home
 
 import com.ohieku.newsapp.data.common.ResourceState
+import com.ohieku.newsapp.data.network.ApiException
+import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
 import com.ohieku.newsapp.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,8 +41,8 @@ class HomeViewModel @Inject constructor(
                             totalResults = if (newArticles.isEmpty()) currentState.totalResults else result.data.totalResults,
                             isLoading = false,
                             isLoadingMore = false,
-                            errorMessage = null,
-                            articles = currentState.articles + newArticles,
+                            error = null,
+                            articles = currentState.articles.appendDistinct(newArticles),
                             currentPage = page,
                             endReached = newArticles.isEmpty(),
                         )
@@ -51,7 +54,7 @@ class HomeViewModel @Inject constructor(
                         currentState.copy(
                             isLoading = false,
                             isLoadingMore = false,
-                            errorMessage = result.error.message ?: DEFAULT_ERROR_MESSAGE
+                            error = (result.error as? ApiException)?.type ?: ErrorType.Unknown
                         )
                     }
                 }
@@ -61,7 +64,7 @@ class HomeViewModel @Inject constructor(
 
     fun fetchNextPage() {
         val state = _uiState.value
-        if (loadJob?.isActive == true || state.errorMessage != null || !state.hasMorePages) return
+        if (loadJob?.isActive == true || state.error != null || !state.hasMorePages) return
         getNews(state.currentPage + 1)
     }
 
@@ -70,13 +73,15 @@ class HomeViewModel @Inject constructor(
         _uiState.update { currentState ->
             currentState.copy(
                 isLoading = currentState.articles.isEmpty(),
-                errorMessage = null
+                error = null
             )
         }
         fetchNextPage()
     }
 
-    companion object {
-        private const val DEFAULT_ERROR_MESSAGE = "Something went wrong, please try again later"
+    // NewsAPI can repeat an article across pages as headlines shift; keep the first copy
+    private fun List<Article>.appendDistinct(newArticles: List<Article>): List<Article> {
+        val seenUrls = mapNotNullTo(HashSet()) { it.url }
+        return this + newArticles.filter { article -> article.url == null || seenUrls.add(article.url) }
     }
 }

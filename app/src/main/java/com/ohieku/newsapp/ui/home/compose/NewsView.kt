@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -73,7 +74,10 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
         onClick = { onClick?.invoke() },
         enabled = onClick != null,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White, disabledContainerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, disabledElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -82,7 +86,7 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
         Column {
             AsyncImage(
                 model = article.urlToImage,
-                contentDescription = article.title,
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -110,7 +114,7 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
                     text = article.title ?: "",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 24.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -119,7 +123,7 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
                 Text(
                     text = article.description ?: "",
                     fontSize = 14.sp,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -129,7 +133,7 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
                     Text(
                         text = footer,
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -245,7 +249,7 @@ fun PageErrorFooter(message: String, onRetryTapped: () -> Unit) {
         Text(
             text = message,
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         TextButton(onClick = onRetryTapped) {
