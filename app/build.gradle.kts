@@ -68,6 +68,7 @@ android {
 dependencies {
     implementation(Dependencies.coreKtx)
     implementation(Dependencies.lifecycleRuntimeKtx)
+    implementation(Dependencies.lifecycleRuntimeCompose)
     implementation(Dependencies.activityCompose)
     implementation(Dependencies.constraintLayout)
     implementation(Dependencies.composeConstraintLayout)

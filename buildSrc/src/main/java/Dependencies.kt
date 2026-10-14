@@ -2,6 +2,7 @@ object Dependencies {
     val coreKtx by lazy { "androidx.core:core-ktx:${Versions.coreKtx}" }
     val appCompat by lazy { "androidx.appcompat:appcompat:${Versions.appCompat}" }
     val lifecycleRuntimeKtx by lazy { "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycleRuntimeKtx}" }
+    val lifecycleRuntimeCompose by lazy { "androidx.lifecycle:lifecycle-runtime-compose:${Versions.lifecycleRuntimeKtx}" }
     val activityCompose by lazy { "androidx.activity:activity-compose:${Versions.activityCompose}" }
     val composeBom by lazy { "androidx.compose:compose-bom:${Versions.composeBom}" }
     val composeUi by lazy { "androidx.compose.ui:ui:${Versions.composeUi}"}
