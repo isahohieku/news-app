@@ -1,6 +1,5 @@
 package com.ohieku.newsapp.data.features.news
 
-import com.ohieku.newsapp.BuildConfig
 import com.ohieku.newsapp.data.features.news.model.NewsDto
 import retrofit2.Response
 import retrofit2.http.GET
@@ -13,7 +12,6 @@ interface NewsApi {
         @Query("country") country: String,
         @Query("language") language: String,
         @Query("page") page: Int,
-        @Query("apiKey") apiKey: String = BuildConfig.API_KEY
     ): Response<NewsDto>
 
 

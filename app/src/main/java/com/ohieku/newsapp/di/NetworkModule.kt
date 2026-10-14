@@ -1,5 +1,6 @@
 package com.ohieku.newsapp.di
 
+import com.ohieku.newsapp.BuildConfig
 import com.ohieku.newsapp.core.AppConstants
 import com.ohieku.newsapp.data.features.news.NewsApi
 import com.squareup.moshi.Moshi
@@ -18,14 +19,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+    private const val API_KEY_HEADER = "X-Api-Key"
+
     @[Provides Singleton]
     fun providesRetrofit(): Retrofit {
-        val httpLoginInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
-        }
-
         val httpClient = OkHttpClient().newBuilder().apply {
-            addInterceptor((httpLoginInterceptor))
+            addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header(API_KEY_HEADER, BuildConfig.API_KEY)
+                    .build()
+                chain.proceed(request)
+            }
+
+            if (BuildConfig.DEBUG) {
+                addInterceptor(
+                    HttpLoggingInterceptor().apply {
+                        level = HttpLoggingInterceptor.Level.BASIC
+                        redactHeader(API_KEY_HEADER)
+                    }
+                )
+            }
         }
 
         httpClient.apply {

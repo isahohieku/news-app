@@ -14,7 +14,9 @@ class NewsDataSource @Inject constructor(
 ) {
 
     suspend fun getNewsHeadline(country: String, language: String, page: Int): ResourceState<NewsModel> {
-        val response = newsApi.getNewsHeadline(AppConstants.APP_DEFAULT_COUNTRY, language, page)
-        return apiResponseHandler.handleResponseMapping(response, newsDtoToDomainModel)
+        return apiResponseHandler.handleResponseMapping(
+            call = { newsApi.getNewsHeadline(AppConstants.APP_DEFAULT_COUNTRY, language, page) },
+            mapper = newsDtoToDomainModel,
+        )
     }
 }
