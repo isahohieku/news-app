@@ -1,6 +1,5 @@
 package com.ohieku.newsapp.data.features.news.datasource
 
-import com.ohieku.newsapp.core.AppConstants
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.data.features.news.NewsApi
 import com.ohieku.newsapp.data.features.news.mapper.NewsDataMapper.newsDtoToDomainModel
@@ -13,9 +12,9 @@ class NewsDataSource @Inject constructor(
     private val apiResponseHandler: ApiResponseHandler,
 ) {
 
-    suspend fun getNewsHeadline(country: String, language: String, page: Int): ResourceState<NewsModel> {
+    suspend fun getNewsHeadline(country: String, page: Int): ResourceState<NewsModel> {
         return apiResponseHandler.handleResponseMapping(
-            call = { newsApi.getNewsHeadline(AppConstants.APP_DEFAULT_COUNTRY, language, page) },
+            call = { newsApi.getNewsHeadline(country, page) },
             mapper = newsDtoToDomainModel,
         )
     }

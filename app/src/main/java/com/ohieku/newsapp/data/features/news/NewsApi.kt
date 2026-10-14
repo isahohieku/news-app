@@ -10,7 +10,6 @@ interface NewsApi {
     @GET("top-headlines")
     suspend fun getNewsHeadline(
         @Query("country") country: String,
-        @Query("language") language: String,
         @Query("page") page: Int,
     ): Response<NewsDto>
 
