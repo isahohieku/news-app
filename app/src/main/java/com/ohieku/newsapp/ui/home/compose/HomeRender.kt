@@ -12,6 +12,7 @@ fun renderHomeScreen() {
     val state by viewModel.uiState.collectAsState()
     HomeScreen(
         state = state,
-        onFetchNextPageTapped = viewModel::fetchNextPage
+        onFetchNextPageTapped = viewModel::fetchNextPage,
+        onRetryTapped = viewModel::retry
     )
 }

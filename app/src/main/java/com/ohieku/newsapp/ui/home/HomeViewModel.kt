@@ -1,6 +1,5 @@
 package com.ohieku.newsapp.ui.home
 
-import androidx.lifecycle.DefaultLifecycleObserver
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
 import com.ohieku.newsapp.viewmodel.BaseViewModel
@@ -13,17 +12,16 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getNewsUseCase: GetNewsUseCase,
-): BaseViewModel(), DefaultLifecycleObserver {
+): BaseViewModel() {
     private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.initial())
     val uiState: StateFlow<HomeUiState>
         get() = _uiState
 
     init {
-        getNews()
+        fetchNextPage()
     }
 
-    private fun getNews() {
-        val page = _uiState.value.currentPage
+    private fun getNews(page: Int) {
         loadData {
             when (val result = getNewsUseCase(page)) {
                 is ResourceState.Success -> {
@@ -31,7 +29,9 @@ class HomeViewModel @Inject constructor(
                         currentState.copy(
                             totalPages = result.data.totalResults,
                             isLoading = false,
+                            errorMessage = null,
                             articles = currentState.articles + result.data.articles,
+                            currentPage = page,
                         )
                     }
                 }
@@ -40,7 +40,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update { currentState ->
                         currentState.copy(
                             isLoading = false,
-                            isError = true
+                            errorMessage = result.error.message ?: DEFAULT_ERROR_MESSAGE
                         )
                     }
                 }
@@ -49,11 +49,20 @@ class HomeViewModel @Inject constructor(
     }
 
     fun fetchNextPage() {
+        getNews(_uiState.value.currentPage + 1)
+    }
+
+    fun retry() {
         _uiState.update { currentState ->
             currentState.copy(
-                currentPage = currentState.currentPage + 1
+                isLoading = currentState.articles.isEmpty(),
+                errorMessage = null
             )
         }
-        getNews()
+        fetchNextPage()
+    }
+
+    companion object {
+        private const val DEFAULT_ERROR_MESSAGE = "Something went wrong, please try again later"
     }
 }

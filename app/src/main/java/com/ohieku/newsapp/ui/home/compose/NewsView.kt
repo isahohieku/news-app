@@ -1,7 +1,6 @@
 package com.ohieku.newsapp.ui.home.compose
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,14 +10,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -29,11 +37,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import com.ohieku.newsapp.R
-import com.ohieku.newsapp.ui.compose.theme.Red100
-import androidx.compose.ui.platform.LocalConfiguration
+import com.ohieku.newsapp.ui.compose.theme.PrimaryOrange
 import com.ohieku.newsapp.domain.features.news.model.Article
 
 @Composable
@@ -49,61 +55,82 @@ fun Loader() {
             modifier = Modifier
                 .size(60.dp)
                 .padding(10.dp),
-            color = Red100
+            color = PrimaryOrange
         )
     }
 }
 
 @Composable
-fun NewsRowComponent(page: Int, article: Article, total: Int) {
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val topColumnHeight = 240.dp
-    val bottomColumnHeight = screenHeight - topColumnHeight
-
-    ConstraintLayout(
+fun NewsCardComponent(page: Int, article: Article, total: Int) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
-            .fillMaxSize()
-            .background((Color.White))
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
-        val (topColumn, bottomColumn) = createRefs()
-
-        Column (
-            modifier = Modifier
-                .constrainAs(topColumn) {
-                    top.linkTo(parent.top)
-                }
-        ) {
+        Column {
             AsyncImage(
                 model = article.urlToImage,
-                contentDescription = "",
+                contentDescription = article.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(topColumnHeight),
+                    .height(200.dp),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(id = R.drawable.placeholder),
                 error = painterResource(id = R.drawable.placeholder)
             )
-        }
 
-        Column (modifier = Modifier
-            .clip(shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
-            .background(color = Color.White)
-            .height(bottomColumnHeight)
-            .constrainAs(bottomColumn) {
-                top.linkTo(topColumn.bottom, margin = -(15).dp)
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Category Tag
+                Text(
+                    text = "SPACE", // Mocked as we don't have category in Article model
+                    color = PrimaryOrange,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                // Headline
+                Text(
+                    text = article.title ?: "",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    lineHeight = 24.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                // Description (Optional if space needed, keeping it as per reference)
+                Text(
+                    text = article.description ?: "",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    maxLines = 2,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Footer
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "1 hour ago • ${article.source?.name ?: article.author ?: "Unknown"}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Filled.Place, contentDescription = "Bookmark", tint = Color.Gray)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = Color.Gray)
+                    }
+                }
             }
-        ) {
-            Spacer(modifier = Modifier.size(20.dp))
-
-            HeaderText(article.title?: "")
-
-            Spacer(modifier = Modifier.size(10.dp))
-
-            ContextText(article.description?: "")
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            FooterDetail(article.author?: "", article.source?.name?: "", page, total)
         }
     }
 }
@@ -171,15 +198,57 @@ fun EmptyState() {
     }
 }
 
+@Composable
+fun ErrorState(message: String, onRetryTapped: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        HeaderText(text = message, centerText = true)
+        Button(onClick = onRetryTapped) {
+            Text(text = stringResource(R.string.retry))
+        }
+    }
+}
+
+@Composable
+fun PageErrorFooter(message: String, onRetryTapped: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = message,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.weight(1f)
+        )
+        TextButton(onClick = onRetryTapped) {
+            Text(text = stringResource(R.string.retry))
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun EmptyStateComponentPreview () {
     EmptyState()
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ErrorStateComponentPreview() {
+    ErrorState(message = "No Internet, please check and try again", onRetryTapped = {})
+}
+
 @Preview
 @Composable
-fun NewsRowPreviewComponent() {
+fun NewsCardPreviewComponent() {
     val article = Article(
         author = "Mr X",
         title = "Hello, Dummy article",
@@ -190,5 +259,5 @@ fun NewsRowPreviewComponent() {
         null,
         null
     )
-    NewsRowComponent(0, article, 1)
+    NewsCardComponent(0, article, 1)
 }

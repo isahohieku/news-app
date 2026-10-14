@@ -1,51 +1,63 @@
 package com.ohieku.newsapp.ui.home.compose
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ohieku.newsapp.ui.home.HomeUiState
+import com.ohieku.newsapp.ui.compose.components.MainScaffold
+import com.ohieku.newsapp.ui.compose.components.OverviewSection
 
 @Composable
 internal fun HomeScreen(
     state: HomeUiState,
-    onFetchNextPageTapped: () -> Unit
+    onFetchNextPageTapped: () -> Unit,
+    onRetryTapped: () -> Unit
 ) {
-    if (state.isLoading) {
-        Loader()
-    } else if (!state.isLoading && state.articles.isNotEmpty()) {
-        val pagerState = rememberPagerState(
-            initialPage = 0,
-            initialPageOffsetFraction = 0f
-        ) {
-            state.totalPages
-        }
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            pageSize = PageSize.Fill,
-            pageSpacing = 8.dp
-        ) { page: Int ->
-            NewsRowComponent(page, state.articles[page], state.totalPages)
-            if ((page == state.articles.size - 5) && (state.articles.size - 1 < state.totalPages)) {
-                LaunchedEffect(page) {
-                    // Trigger fetching the next page
-                    onFetchNextPageTapped()
+    MainScaffold { paddingValues ->
+        when {
+            state.isLoading -> Loader()
+
+            state.articles.isNotEmpty() -> {
+                val listState = rememberLazyListState()
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    item {
+                        OverviewSection()
+                    }
+
+                    itemsIndexed(state.articles) { index, article ->
+                        NewsCardComponent(index, article, state.totalPages)
+
+                        if ((index == state.articles.size - 5) && (state.articles.size - 1 < state.totalPages)) {
+                            LaunchedEffect(index) {
+                                onFetchNextPageTapped()
+                            }
+                        }
+                    }
+
+                    state.errorMessage?.let { message ->
+                        item {
+                            PageErrorFooter(message, onRetryTapped)
+                        }
+                    }
                 }
             }
-        }
-    } else {
-        EmptyState()
-    }
 
-    if (!state.isLoading && state.isError) {
-//            val error = newsResponse as ResourceState.Error
-//            Log.d(TAG, "Inside_Error $error")
+            state.errorMessage != null -> ErrorState(state.errorMessage, onRetryTapped)
+
+            else -> EmptyState()
+        }
     }
 }
 
@@ -54,6 +66,7 @@ internal fun HomeScreen(
 fun HomeScreenPreview() {
     HomeScreen(
         state = HomeUiState.initial(),
-        onFetchNextPageTapped = { /* no-op */ }
+        onFetchNextPageTapped = { /* no-op */ },
+        onRetryTapped = { /* no-op */ }
     )
 }
