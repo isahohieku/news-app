@@ -41,7 +41,7 @@ class ApiResponseHandlerTest {
     fun `empty body is an error`() = runTest {
         val result = handle { Response.success(null) }
 
-        assertEquals("Empty response from server", result.apiException().message)
+        assertEquals(ErrorType.Server, result.apiException().type)
     }
 
     @Test
@@ -49,41 +49,44 @@ class ApiResponseHandlerTest {
         val exception = handle { errorResponse(401) }.apiException()
 
         assertEquals(401, exception.statusCode)
-        assertEquals("News is unavailable right now, try again later", exception.message)
+        assertEquals(ErrorType.Unavailable, exception.type)
     }
 
     @Test
-    fun `rate limit has its own message`() = runTest {
+    fun `rate limit has its own type`() = runTest {
         val exception = handle { errorResponse(429) }.apiException()
 
         assertEquals(429, exception.statusCode)
-        assertEquals("Too many requests, try again later", exception.message)
+        assertEquals(ErrorType.RateLimited, exception.type)
     }
 
     @Test
     fun `unknown http error keeps its real status code`() = runTest {
-        assertEquals(503, handle { errorResponse(503) }.apiException().statusCode)
+        val exception = handle { errorResponse(503) }.apiException()
+
+        assertEquals(503, exception.statusCode)
+        assertEquals(ErrorType.Server, exception.type)
     }
 
     @Test
     fun `no network is reported as no internet`() = runTest {
         val result = handle { throw UnknownHostException() }
 
-        assertEquals("No Internet, please check and try again", result.apiException().message)
+        assertEquals(ErrorType.NoInternet, result.apiException().type)
     }
 
     @Test
     fun `timeout is reported as slow server`() = runTest {
         val result = handle { throw SocketTimeoutException() }
 
-        assertEquals("The server took too long to respond, try again", result.apiException().message)
+        assertEquals(ErrorType.Timeout, result.apiException().type)
     }
 
     @Test
     fun `mapper failure is an error`() = runTest {
         val result = handler.handleResponseMapping({ Response.success("x") }) { error("bad data") }
 
-        assertEquals("Something went wrong, please try again later", result.apiException().message)
+        assertEquals(ErrorType.Unknown, result.apiException().type)
     }
 
     @Test

@@ -19,7 +19,7 @@ class ApiResponseHandler @Inject constructor() {
     ): ResourceState<DomainModel> = safeCall {
         val response = call()
         if (!response.isSuccessful) throw getException(response)
-        val dto = response.body() ?: throw ApiException(response.code(), "Empty response from server")
+        val dto = response.body() ?: throw ApiException(ErrorType.Server, response.code())
         ResourceState.Success(mapper(dto))
     }
 
@@ -39,15 +39,15 @@ class ApiResponseHandler @Inject constructor() {
         } catch (e: ApiException) {
             ResourceState.Error(e)
         } catch (e: UnknownHostException) {
-            ResourceState.Error(ApiException("No Internet, please check and try again", e))
+            ResourceState.Error(ApiException(ErrorType.NoInternet, cause = e))
         } catch (e: ConnectException) {
-            ResourceState.Error(ApiException("No Internet, please check and try again", e))
+            ResourceState.Error(ApiException(ErrorType.NoInternet, cause = e))
         } catch (e: SocketTimeoutException) {
-            ResourceState.Error(ApiException("The server took too long to respond, try again", e))
+            ResourceState.Error(ApiException(ErrorType.Timeout, cause = e))
         } catch (e: IOException) {
-            ResourceState.Error(ApiException("Can't connect, please try again later", e))
+            ResourceState.Error(ApiException(ErrorType.CannotConnect, cause = e))
         } catch (e: Exception) {
-            ResourceState.Error(ApiException("Something went wrong, please try again later", e))
+            ResourceState.Error(ApiException(ErrorType.Unknown, cause = e))
         }
     }
 }
