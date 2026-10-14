@@ -111,6 +111,8 @@ dependencies {
 
     implementation(Dependencies.coil)
 
+    implementation(Dependencies.browser)
+
     implementation(project(Modules.utilities))
 
 }

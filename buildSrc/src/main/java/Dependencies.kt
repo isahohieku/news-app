@@ -38,6 +38,7 @@ object Dependencies {
     val splashScreen by lazy { "androidx.core:core-splashscreen:${Versions.splashScreen}"}
 
     val coil by lazy { "io.coil-kt:coil-compose:${Versions.coil}"}
+    val browser by lazy { "androidx.browser:browser:${Versions.browser}"}
     val fragment by lazy { "androidx.fragment:fragment-ktx:${Versions.fragment}"}
     val fragmentNavigation by lazy { "androidx.navigation:navigation-fragment:${Versions.fragmentNavigation}"}
     val constraintsLayout by lazy { "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}" }
