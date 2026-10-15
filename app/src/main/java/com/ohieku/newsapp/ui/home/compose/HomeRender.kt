@@ -17,6 +17,9 @@ fun renderHomeScreen() {
         state = state,
         onFetchNextPageTapped = viewModel::fetchNextPage,
         onRetryTapped = viewModel::retry,
-        onArticleTapped = { url -> context.openInBrowser(url) }
+        onArticleTapped = { url -> context.openInBrowser(url) },
+        onCategorySelected = viewModel::selectCategory,
+        onRefresh = viewModel::refresh,
+        onRefreshErrorShown = viewModel::refreshErrorShown
     )
 }

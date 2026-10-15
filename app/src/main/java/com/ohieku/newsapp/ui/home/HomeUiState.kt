@@ -2,12 +2,17 @@ package com.ohieku.newsapp.ui.home
 
 import com.ohieku.newsapp.data.network.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
+import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 
 data class HomeUiState(
+    val category: NewsCategory = NewsCategory.Top,
     val totalResults: Int = 0,
     val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,
+    val isRefreshing: Boolean = false,
     val error: ErrorType? = null,
+    // A failed pull-to-refresh keeps the current list and reports the error once
+    val refreshError: ErrorType? = null,
     val articles: List<Article> = emptyList(),
     // Last page loaded successfully; 0 means nothing has loaded yet
     val currentPage: Int = 0,

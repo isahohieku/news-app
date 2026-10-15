@@ -4,6 +4,7 @@ import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.data.network.ApiException
 import com.ohieku.newsapp.data.network.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
+import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
@@ -26,11 +27,13 @@ class HomeViewModelTest {
 
     private class FakeNewsRepository : NewsRepository {
         val requestedPages = mutableListOf<Int>()
+        val requestedCategories = mutableListOf<NewsCategory>()
         val results = ArrayDeque<ResourceState<NewsModel>>()
         var gate: CompletableDeferred<Unit>? = null
 
-        override suspend fun getNewsHeadline(page: Int): ResourceState<NewsModel> {
+        override suspend fun getNewsHeadline(category: NewsCategory, page: Int): ResourceState<NewsModel> {
             requestedPages += page
+            requestedCategories += category
             gate?.await()
             return results.removeFirst()
         }
@@ -213,5 +216,87 @@ class HomeViewModelTest {
         repository.results += ResourceState.Error(IllegalStateException("boom"))
 
         assertEquals(ErrorType.Unknown, createViewModel().uiState.value.error)
+    }
+
+    @Test
+    fun `selecting a category starts again from its first page`() {
+        repository.results += success("a")
+        repository.results += success("b")
+        repository.results += success("x")
+        val viewModel = createViewModel()
+        viewModel.fetchNextPage()
+
+        viewModel.selectCategory(NewsCategory.Sports)
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(1, 2, 1), repository.requestedPages)
+        assertEquals(NewsCategory.Sports, repository.requestedCategories.last())
+        assertEquals(NewsCategory.Sports, state.category)
+        assertEquals(listOf("x"), state.articles.map { it.title })
+        assertEquals(1, state.currentPage)
+    }
+
+    @Test
+    fun `selecting the current category does nothing`() {
+        repository.results += success("a")
+        val viewModel = createViewModel()
+
+        viewModel.selectCategory(NewsCategory.Top)
+
+        assertEquals(listOf(1), repository.requestedPages)
+    }
+
+    @Test
+    fun `switching category while loading drops the old request`() {
+        val gate = CompletableDeferred<Unit>()
+        repository.gate = gate
+        repository.results += success("science")
+        repository.results += success("old")
+        val viewModel = createViewModel()
+
+        repository.gate = null
+        viewModel.selectCategory(NewsCategory.Science)
+        gate.complete(Unit)
+
+        val state = viewModel.uiState.value
+        assertEquals(NewsCategory.Science, state.category)
+        assertEquals(listOf("science"), state.articles.map { it.title })
+    }
+
+    @Test
+    fun `refresh replaces the list with the first page`() {
+        repository.results += success("a")
+        repository.results += success("b")
+        repository.results += success("new")
+        val viewModel = createViewModel()
+        viewModel.fetchNextPage()
+
+        viewModel.refresh()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(1, 2, 1), repository.requestedPages)
+        assertFalse(state.isRefreshing)
+        assertEquals(listOf("new"), state.articles.map { it.title })
+        assertEquals(1, state.currentPage)
+    }
+
+    @Test
+    fun `failed refresh keeps the list and reports the error once`() {
+        repository.results += success("a")
+        repository.results += failure(ErrorType.NoInternet)
+        val viewModel = createViewModel()
+
+        viewModel.refresh()
+
+        viewModel.uiState.value.let { state ->
+            assertFalse(state.isRefreshing)
+            assertNull(state.error)
+            assertEquals(ErrorType.NoInternet, state.refreshError)
+            assertEquals(listOf("a"), state.articles.map { it.title })
+        }
+
+        viewModel.refreshErrorShown()
+
+        assertNull(viewModel.uiState.value.refreshError)
     }
 }
