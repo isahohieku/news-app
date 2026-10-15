@@ -29,6 +29,7 @@ object Versions {
     const val splashScreen = "1.0.1"
     const val coil = "2.2.0"
     const val browser = "1.8.0"
+    const val room = "2.6.1"
     const val fragment = "1.8.4"
     const val fragmentNavigation = "2.8.2"
     const val navigationUi = "2.7.0"

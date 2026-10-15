@@ -40,6 +40,10 @@ object Dependencies {
 
     val coil by lazy { "io.coil-kt:coil-compose:${Versions.coil}"}
     val browser by lazy { "androidx.browser:browser:${Versions.browser}"}
+
+    val roomRuntime by lazy { "androidx.room:room-runtime:${Versions.room}"}
+    val roomKtx by lazy { "androidx.room:room-ktx:${Versions.room}"}
+    val roomCompiler by lazy { "androidx.room:room-compiler:${Versions.room}"}
     val fragment by lazy { "androidx.fragment:fragment-ktx:${Versions.fragment}"}
     val fragmentNavigation by lazy { "androidx.navigation:navigation-fragment:${Versions.fragmentNavigation}"}
     val constraintsLayout by lazy { "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}" }

@@ -114,6 +114,10 @@ dependencies {
 
     implementation(Dependencies.browser)
 
+    implementation(Dependencies.roomRuntime)
+    implementation(Dependencies.roomKtx)
+    kapt(Dependencies.roomCompiler)
+
     implementation(project(Modules.utilities))
 
 }
