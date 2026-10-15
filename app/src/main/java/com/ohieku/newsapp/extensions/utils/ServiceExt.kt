@@ -1,7 +1,7 @@
 package com.ohieku.newsapp.extensions.utils
 
 import com.ohieku.newsapp.data.network.ApiException
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.ErrorType
 import retrofit2.Response
 
 fun <T> getException(response: Response<T>): ApiException {

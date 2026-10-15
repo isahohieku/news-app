@@ -1,6 +1,7 @@
 package com.ohieku.newsapp.data.network
 
-import com.ohieku.newsapp.data.common.ResourceState
+import com.ohieku.newsapp.domain.common.ErrorType
+import com.ohieku.newsapp.domain.common.ResourceState
 import com.ohieku.newsapp.extensions.utils.getException
 import kotlinx.coroutines.CancellationException
 import okhttp3.ResponseBody

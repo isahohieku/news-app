@@ -1,19 +1,10 @@
 package com.ohieku.newsapp.data.network
 
-enum class ErrorType {
-    NoInternet,
-    Timeout,
-    CannotConnect,
-    BadRequest,
-    Unavailable,
-    NotFound,
-    RateLimited,
-    Server,
-    Unknown,
-}
+import com.ohieku.newsapp.domain.common.AppException
+import com.ohieku.newsapp.domain.common.ErrorType
 
 class ApiException(
-    val type: ErrorType,
+    type: ErrorType,
     val statusCode: Int = 0,
     cause: Throwable? = null,
-) : Exception(if (statusCode != 0) "$type ($statusCode)" else type.name, cause)
+) : AppException(type, if (statusCode != 0) "$type ($statusCode)" else type.name, cause)

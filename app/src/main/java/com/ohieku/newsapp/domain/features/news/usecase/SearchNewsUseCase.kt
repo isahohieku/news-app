@@ -1,6 +1,6 @@
 package com.ohieku.newsapp.domain.features.news.usecase
 
-import com.ohieku.newsapp.data.common.ResourceState
+import com.ohieku.newsapp.domain.common.ResourceState
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository

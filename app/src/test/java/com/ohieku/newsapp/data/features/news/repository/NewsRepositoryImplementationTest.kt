@@ -1,7 +1,7 @@
 package com.ohieku.newsapp.data.features.news.repository
 
 import com.ohieku.newsapp.core.provider.LocaleProvider
-import com.ohieku.newsapp.data.common.ResourceState
+import com.ohieku.newsapp.domain.common.ResourceState
 import com.ohieku.newsapp.data.features.news.NewsApi
 import com.ohieku.newsapp.data.features.news.datasource.NewsDataSource
 import com.ohieku.newsapp.data.features.news.model.ArticleDto
