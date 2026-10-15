@@ -5,6 +5,7 @@ primary_target: "app/src/main/java/com/ohieku/newsapp/ui"
 related_targets: []
 ---
 
+
 # Surface brief: Central News app UI (Home, Search, Saved)
 
 Mode: Operate (native Android, Material 3). Chosen direction: Broadcast Bulletin. Build path: code-led. Chosen sketch: `.impeccable/mocks/decision/model-pick.html`.
@@ -19,12 +20,13 @@ OWN-WORLD:
 - Light grey #F2F3F5 ground with white running-order sheets divided by 1px hairlines, no cards.
 - Archivo throughout: ExtraBold headlines, SemiBold rows, uppercase tracked labels.
 
-STORY: A commuter sees the biggest story and its freshness at once, scans 6 or more headlines per screen by time and source, opens one in a tap, saves with confirmation and Undo, and can always reach Saved offline.
+STORY: A commuter sees the biggest story and plainly how old the bulletin is ("Yesterday's top stories · as of 3:44 AM"), scans 6 or more headlines per screen by clock time and source, opens one in a tap (offline, a message instead of the browser's error), saves with confirmation and Undo, and can always reach Saved offline.
 
 FIRST VIEWPORT:
 - Dark top bar (56dp) with the wordmark and search, then pinned scrollable category tabs (48dp).
-- Lead photo (about 220dp) with a time bug top-right, and a lower-third at its foot: a red source tag over a white headline panel (headlineSmall, at most 3 lines). A lead with no photo keeps the lower-third, minus the image.
-- Running-order rows: a 52dp red tabular time column, the headline (3 lines max), an uppercase source label, and a trailing bookmark.
+- A day header on the ground naming the bulletin and its fetch time, above the lead.
+- Lead photo (16:9) with a clock-time bug top-right, and a lower-third strap overlapping its foot: a red source tag over a white headline panel (headlineSmall, at most 3 lines). A lead with no photo, or whose photo fails to load, puts the headline first with the tag and time beneath it.
+- Running-order rows: a red tabular clock-time column of one measured width (small AM/PM), the headline (3 lines max), an uppercase source label, and a trailing bookmark; a new day header wherever the day changes.
 - Bottom bar: Home and Saved.
 - Translation: the sketch's NEXT ticker is dropped (an overlay marquee on a working screen); the running order carries "next".
 
