@@ -1,8 +1,11 @@
 package com.ohieku.newsapp.ui.home
 
-import com.ohieku.newsapp.data.common.ResourceState
-import com.ohieku.newsapp.data.network.ApiException
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.AppException
+import com.ohieku.newsapp.domain.common.ResourceState
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.ObserveBookmarkedUrlsUseCase
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.SetBookmarkedUseCase
+import com.ohieku.newsapp.ui.common.StartupReadiness
+import com.ohieku.newsapp.domain.common.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
@@ -51,11 +54,13 @@ class HomeViewModelTest {
         ResourceState.Success(NewsModel("ok", total, titles.map(::article)))
 
     private fun failure(type: ErrorType): ResourceState<NewsModel> =
-        ResourceState.Error(ApiException(type))
+        ResourceState.Error(AppException(type))
 
     private val bookmarks = FakeBookmarkRepository()
 
-    private fun createViewModel() = HomeViewModel(GetNewsUseCase(repository), bookmarks)
+    private val startupReadiness = StartupReadiness()
+
+    private fun createViewModel() = HomeViewModel(GetNewsUseCase(repository), ObserveBookmarkedUrlsUseCase(bookmarks), SetBookmarkedUseCase(bookmarks), startupReadiness)
 
     @Before
     fun setUp() {
@@ -90,6 +95,25 @@ class HomeViewModelTest {
         assertEquals(ErrorType.NoInternet, state.error)
         assertTrue(state.articles.isEmpty())
         assertEquals(0, state.currentPage)
+    }
+
+    @Test
+    fun `startup is ready once the first page loads`() {
+        repository.results += success("a")
+        assertFalse(startupReadiness.isReady.value)
+
+        createViewModel()
+
+        assertTrue(startupReadiness.isReady.value)
+    }
+
+    @Test
+    fun `startup is ready when the first page fails so the splash never hangs`() {
+        repository.results += failure(ErrorType.NoInternet)
+
+        createViewModel()
+
+        assertTrue(startupReadiness.isReady.value)
     }
 
     @Test
@@ -312,20 +336,20 @@ class HomeViewModelTest {
         val viewModel = createViewModel()
         val article = viewModel.uiState.value.feed.articles.first()
 
-        viewModel.toggleBookmark(article)
+        viewModel.setBookmarked(article, saved = true)
 
         assertEquals(setOf(article.url), viewModel.uiState.value.bookmarkedUrls)
         assertEquals(listOf(article), bookmarks.bookmarks.value)
     }
 
     @Test
-    fun `bookmarking a saved article removes it`() {
+    fun `unbookmarking a saved article removes it`() {
         repository.results += success("a")
         val viewModel = createViewModel()
         val article = viewModel.uiState.value.feed.articles.first()
-        viewModel.toggleBookmark(article)
+        viewModel.setBookmarked(article, saved = true)
 
-        viewModel.toggleBookmark(article)
+        viewModel.setBookmarked(article, saved = false)
 
         assertTrue(viewModel.uiState.value.bookmarkedUrls.isEmpty())
         assertTrue(bookmarks.bookmarks.value.isEmpty())

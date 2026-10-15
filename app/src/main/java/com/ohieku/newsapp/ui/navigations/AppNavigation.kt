@@ -46,8 +46,6 @@ import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ohieku.newsapp.ui.compose.theme.LocalNewsColors
 import com.ohieku.newsapp.ui.bookmarks.compose.renderBookmarksScreen
-import com.ohieku.newsapp.ui.home.HomeViewModel
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.ohieku.newsapp.ui.home.compose.renderHomeScreen
 import com.ohieku.newsapp.ui.search.compose.renderSearchScreen
 
@@ -64,10 +62,7 @@ private enum class TopLevelDestination(
 }
 
 @Composable
-fun AppNavigationGraph(
-    navController: NavHostController,
-    homeViewModel: HomeViewModel = hiltViewModel()
-) {
+fun AppNavigationGraph(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
@@ -111,8 +106,7 @@ fun AppNavigationGraph(
                     requestedCategory = requestedCategory?.let { name ->
                         NewsCategory.entries.firstOrNull { it.name == name }
                     },
-                    onRequestedCategoryHandled = { entry.savedStateHandle[REQUESTED_CATEGORY_KEY] = null },
-                    viewModel = homeViewModel
+                    onRequestedCategoryHandled = { entry.savedStateHandle[REQUESTED_CATEGORY_KEY] = null }
                 )
             }
             composable(Routes.SEARCH_SCREEN) {
