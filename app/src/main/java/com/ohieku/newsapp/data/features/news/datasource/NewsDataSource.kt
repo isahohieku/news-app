@@ -12,9 +12,9 @@ class NewsDataSource @Inject constructor(
     private val apiResponseHandler: ApiResponseHandler,
 ) {
 
-    suspend fun getNewsHeadline(country: String, page: Int): ResourceState<NewsModel> {
+    suspend fun getNewsHeadline(country: String, category: String?, page: Int): ResourceState<NewsModel> {
         return apiResponseHandler.handleResponseMapping(
-            call = { newsApi.getNewsHeadline(country, page) },
+            call = { newsApi.getNewsHeadline(country, category, page) },
             mapper = newsDtoToDomainModel,
         )
     }

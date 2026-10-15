@@ -5,6 +5,7 @@ import com.ohieku.newsapp.core.provider.LocaleProvider
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.data.features.news.datasource.NewsDataSource
 import com.ohieku.newsapp.data.network.ApiException
+import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import javax.inject.Inject
@@ -18,26 +19,26 @@ class NewsRepositoryImplementation @Inject constructor(
     @Volatile
     private var resolvedCountry: String? = null
 
-    override suspend fun getNewsHeadline(page: Int): ResourceState<NewsModel> {
-        resolvedCountry?.let { return fetch(it, page) }
+    override suspend fun getNewsHeadline(category: NewsCategory, page: Int): ResourceState<NewsModel> {
+        resolvedCountry?.let { return fetch(it, category, page) }
 
         // NewsAPI returns no headlines for many countries, so fall back to the default when the device's is empty
         val deviceCountry = localeProvider.getDefaultLocale().country.lowercase()
         if (deviceCountry.isNotBlank() && deviceCountry != AppConstants.APP_DEFAULT_COUNTRY) {
-            val result = fetch(deviceCountry, page)
+            val result = fetch(deviceCountry, category, page)
             if (result !is ResourceState.Success || result.data.articles.isNotEmpty()) {
                 if (result is ResourceState.Success) resolvedCountry = deviceCountry
                 return result
             }
         }
 
-        val result = fetch(AppConstants.APP_DEFAULT_COUNTRY, page)
+        val result = fetch(AppConstants.APP_DEFAULT_COUNTRY, category, page)
         if (result is ResourceState.Success) resolvedCountry = AppConstants.APP_DEFAULT_COUNTRY
         return result
     }
 
-    private suspend fun fetch(country: String, page: Int): ResourceState<NewsModel> {
-        val result = newsDataSource.getNewsHeadline(country, page)
+    private suspend fun fetch(country: String, category: NewsCategory, page: Int): ResourceState<NewsModel> {
+        val result = newsDataSource.getNewsHeadline(country, category.apiValue, page)
         val error = (result as? ResourceState.Error)?.error as? ApiException
 
         // NewsAPI answers 426 once the account's result limit is passed; treat it as the end of the list
