@@ -19,4 +19,16 @@
     <string name="error_server">Cannot contact server, try again later</string>
     <string name="error_generic">Something went wrong, please try again later</string>
     <string name="no_browser_found">No app can open this link</string>
+    <string name="search">Search</string>
+    <string name="back">Back</string>
+    <string name="clear_search">Clear search</string>
+    <string name="search_placeholder">Search news</string>
+    <string name="search_hint">Search for topics, people or places</string>
+    <string name="search_no_results">No results for “%1$s”</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_saved">Saved</string>
+    <string name="bookmarks_title">Saved</string>
+    <string name="bookmarks_empty">No saved articles yet\nTap the bookmark on any story to keep it here</string>
+    <string name="bookmark_add">Save article</string>
+    <string name="bookmark_remove">Remove from saved</string>
 </resources>

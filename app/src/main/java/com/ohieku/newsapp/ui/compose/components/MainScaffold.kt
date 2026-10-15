@@ -1,6 +1,7 @@
 package com.ohieku.newsapp.ui.compose.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -16,11 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.ohieku.newsapp.R
 
-// Profile, search and the bottom navigation return once their screens exist
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold(
+    title: String = stringResource(R.string.app_title),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
@@ -29,12 +31,13 @@ fun MainScaffold(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.app_title),
+                        text = title,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         letterSpacing = 1.sp
                     )
                 },
+                actions = actions,
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent,
                 )
