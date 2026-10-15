@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Broadcast chrome; the splash screen opens on it so launch flows into the top bar -->
+    <!-- Broadcast chrome; the broadcast top bar and tabs in dark/light chrome -->
     <color name="chrome">#FF0D0F14</color>
+    <!-- Brand icon red; used for the splash screen background -->
+    <color name="brand_red">#FFE20101</color>
 </resources>
