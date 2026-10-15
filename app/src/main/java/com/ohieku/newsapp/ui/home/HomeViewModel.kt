@@ -1,118 +1,60 @@
 package com.ohieku.newsapp.ui.home
 
-import com.ohieku.newsapp.data.common.ResourceState
-import com.ohieku.newsapp.data.network.ApiException
-import com.ohieku.newsapp.data.network.ErrorType
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ohieku.newsapp.domain.features.bookmarks.repository.BookmarkRepository
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
-import com.ohieku.newsapp.viewmodel.BaseViewModel
+import com.ohieku.newsapp.ui.common.paging.ArticlePager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getNewsUseCase: GetNewsUseCase,
-): BaseViewModel() {
-    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.initial())
-    val uiState: StateFlow<HomeUiState>
-        get() = _uiState
+    private val bookmarkRepository: BookmarkRepository,
+) : ViewModel() {
+    private val category = MutableStateFlow(NewsCategory.Top)
+    private val pager = ArticlePager(viewModelScope) { page -> getNewsUseCase(category.value, page) }
 
-    private var loadJob: Job? = null
+    val uiState: StateFlow<HomeUiState> = combine(
+        category,
+        pager.state,
+        bookmarkRepository.observeBookmarkedUrls(),
+    ) { category, feed, bookmarkedUrls ->
+        HomeUiState(category = category, feed = feed, bookmarkedUrls = bookmarkedUrls)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState.initial())
 
     init {
-        fetchNextPage()
+        pager.fetchNextPage()
     }
 
-    /** Loads [page] of the current category; [replace] swaps the list instead of appending (refresh). */
-    private fun getNews(page: Int, replace: Boolean = false) {
-        if (!replace) {
-            _uiState.update { currentState ->
-                currentState.copy(isLoadingMore = currentState.articles.isNotEmpty())
-            }
-        }
-        val category = _uiState.value.category
+    fun fetchNextPage() = pager.fetchNextPage()
 
-        loadJob = loadData {
-            when (val result = getNewsUseCase(category, page)) {
-                is ResourceState.Success -> {
-                    val newArticles = result.data.articles
-                    _uiState.update { currentState ->
-                        val existing = if (replace) emptyList() else currentState.articles
-                        currentState.copy(
-                            totalResults = if (newArticles.isEmpty()) currentState.totalResults else result.data.totalResults,
-                            isLoading = false,
-                            isLoadingMore = false,
-                            isRefreshing = false,
-                            error = null,
-                            articles = existing.appendDistinct(newArticles),
-                            currentPage = page,
-                            endReached = newArticles.isEmpty(),
-                        )
-                    }
-                }
+    fun retry() = pager.retry()
 
-                is ResourceState.Error -> {
-                    val type = (result.error as? ApiException)?.type ?: ErrorType.Unknown
-                    _uiState.update { currentState ->
-                        if (replace) {
-                            currentState.copy(isRefreshing = false, refreshError = type)
-                        } else {
-                            currentState.copy(
-                                isLoading = false,
-                                isLoadingMore = false,
-                                error = type
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+    fun refresh() = pager.refresh()
 
-    fun fetchNextPage() {
-        val state = _uiState.value
-        if (loadJob?.isActive == true || state.error != null || !state.hasMorePages) return
-        getNews(state.currentPage + 1)
-    }
-
-    fun retry() {
-        if (loadJob?.isActive == true) return
-        _uiState.update { currentState ->
-            currentState.copy(
-                isLoading = currentState.articles.isEmpty(),
-                error = null
-            )
-        }
-        fetchNextPage()
-    }
+    fun refreshErrorShown() = pager.refreshErrorShown()
 
     fun selectCategory(category: NewsCategory) {
-        if (category == _uiState.value.category) return
-        loadJob?.cancel()
-        _uiState.value = HomeUiState(category = category)
-        fetchNextPage()
+        if (category == this.category.value) return
+        this.category.value = category
+        pager.start()
     }
 
-    fun refresh() {
-        loadJob?.cancel()
-        _uiState.update { currentState ->
-            currentState.copy(isRefreshing = true, isLoadingMore = false, refreshError = null)
+    fun toggleBookmark(article: Article) {
+        val url = article.url ?: return
+        val isBookmarked = url in uiState.value.bookmarkedUrls
+        viewModelScope.launch {
+            if (isBookmarked) bookmarkRepository.removeBookmark(url) else bookmarkRepository.addBookmark(article)
         }
-        getNews(page = 1, replace = true)
-    }
-
-    fun refreshErrorShown() {
-        _uiState.update { currentState -> currentState.copy(refreshError = null) }
-    }
-
-    // NewsAPI can repeat an article across pages as headlines shift; keep the first copy
-    private fun List<Article>.appendDistinct(newArticles: List<Article>): List<Article> {
-        val seenUrls = mapNotNullTo(HashSet()) { it.url }
-        return this + newArticles.filter { article -> article.url == null || seenUrls.add(article.url) }
     }
 }

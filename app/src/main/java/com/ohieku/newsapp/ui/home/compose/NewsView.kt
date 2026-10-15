@@ -14,7 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,7 +67,12 @@ fun Loader() {
 }
 
 @Composable
-fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
+fun NewsCardComponent(
+    article: Article,
+    onClick: (() -> Unit)?,
+    isBookmarked: Boolean = false,
+    onBookmarkClick: (() -> Unit)? = null
+) {
     val publishedAt = remember(article.publishedAt) { parsePublishedAt(article.publishedAt) }
     val relativeTime = publishedAt?.let {
         DateUtils.getRelativeTimeSpanString(it, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
@@ -125,18 +135,33 @@ fun NewsCardComponent(article: Article, onClick: (() -> Unit)?) {
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Footer
-                if (footer.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = footer,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
+                    if (onBookmarkClick != null) {
+                        IconButton(onClick = onBookmarkClick) {
+                            Icon(
+                                imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                contentDescription = stringResource(
+                                    if (isBookmarked) R.string.bookmark_remove else R.string.bookmark_add
+                                ),
+                                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -283,5 +308,5 @@ fun NewsCardPreviewComponent() {
         content = null,
         source = Source(id = null, name = "The Verge")
     )
-    NewsCardComponent(article, onClick = {})
+    NewsCardComponent(article, onClick = {}, isBookmarked = true, onBookmarkClick = {})
 }

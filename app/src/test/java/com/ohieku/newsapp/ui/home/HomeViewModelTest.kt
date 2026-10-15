@@ -8,6 +8,7 @@ import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
+import com.ohieku.newsapp.fakes.FakeBookmarkRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +38,8 @@ class HomeViewModelTest {
             gate?.await()
             return results.removeFirst()
         }
+
+        override suspend fun searchNews(query: String, page: Int): ResourceState<NewsModel> = error("Not used")
     }
 
     private val repository = FakeNewsRepository()
@@ -49,7 +52,9 @@ class HomeViewModelTest {
     private fun failure(type: ErrorType): ResourceState<NewsModel> =
         ResourceState.Error(ApiException(type))
 
-    private fun createViewModel() = HomeViewModel(GetNewsUseCase(repository))
+    private val bookmarks = FakeBookmarkRepository()
+
+    private fun createViewModel() = HomeViewModel(GetNewsUseCase(repository), bookmarks)
 
     @Before
     fun setUp() {
@@ -65,7 +70,7 @@ class HomeViewModelTest {
     fun `first page loads on start`() {
         repository.results += success("a", "b")
 
-        val state = createViewModel().uiState.value
+        val state = createViewModel().uiState.value.feed
 
         assertEquals(listOf(1), repository.requestedPages)
         assertFalse(state.isLoading)
@@ -78,7 +83,7 @@ class HomeViewModelTest {
     fun `first page failure stops loading and shows the error`() {
         repository.results += failure(ErrorType.NoInternet)
 
-        val state = createViewModel().uiState.value
+        val state = createViewModel().uiState.value.feed
 
         assertFalse(state.isLoading)
         assertEquals(ErrorType.NoInternet, state.error)
@@ -94,7 +99,7 @@ class HomeViewModelTest {
 
         viewModel.retry()
 
-        val state = viewModel.uiState.value
+        val state = viewModel.uiState.value.feed
         assertEquals(listOf(1, 1), repository.requestedPages)
         assertNull(state.error)
         assertEquals(listOf("a"), state.articles.map { it.title })
@@ -109,7 +114,7 @@ class HomeViewModelTest {
 
         viewModel.fetchNextPage()
 
-        viewModel.uiState.value.let { state ->
+        viewModel.uiState.value.feed.let { state ->
             assertEquals(ErrorType.RateLimited, state.error)
             assertEquals(listOf("a"), state.articles.map { it.title })
             assertEquals(1, state.currentPage)
@@ -118,7 +123,7 @@ class HomeViewModelTest {
 
         viewModel.retry()
 
-        viewModel.uiState.value.let { state ->
+        viewModel.uiState.value.feed.let { state ->
             assertEquals(listOf(1, 2, 2), repository.requestedPages)
             assertNull(state.error)
             assertEquals(listOf("a", "b"), state.articles.map { it.title })
@@ -138,12 +143,12 @@ class HomeViewModelTest {
         viewModel.fetchNextPage()
         viewModel.retry()
 
-        assertTrue(viewModel.uiState.value.isLoadingMore)
+        assertTrue(viewModel.uiState.value.feed.isLoadingMore)
         assertEquals(listOf(1, 2), repository.requestedPages)
 
         gate.complete(Unit)
 
-        viewModel.uiState.value.let { state ->
+        viewModel.uiState.value.feed.let { state ->
             assertFalse(state.isLoadingMore)
             assertEquals(listOf("a", "b"), state.articles.map { it.title })
         }
@@ -158,7 +163,7 @@ class HomeViewModelTest {
         viewModel.fetchNextPage()
         viewModel.fetchNextPage()
 
-        val state = viewModel.uiState.value
+        val state = viewModel.uiState.value.feed
         assertEquals(listOf(1, 2), repository.requestedPages)
         assertTrue(state.endReached)
         assertFalse(state.hasMorePages)
@@ -192,7 +197,7 @@ class HomeViewModelTest {
     fun `empty first page shows the empty state`() {
         repository.results += success(total = 0)
 
-        val state = createViewModel().uiState.value
+        val state = createViewModel().uiState.value.feed
 
         assertFalse(state.isLoading)
         assertNull(state.error)
@@ -208,14 +213,14 @@ class HomeViewModelTest {
 
         viewModel.fetchNextPage()
 
-        assertEquals(listOf("a", "b", "c"), viewModel.uiState.value.articles.map { it.title })
+        assertEquals(listOf("a", "b", "c"), viewModel.uiState.value.feed.articles.map { it.title })
     }
 
     @Test
     fun `unexpected exception type maps to unknown error`() {
         repository.results += ResourceState.Error(IllegalStateException("boom"))
 
-        assertEquals(ErrorType.Unknown, createViewModel().uiState.value.error)
+        assertEquals(ErrorType.Unknown, createViewModel().uiState.value.feed.error)
     }
 
     @Test
@@ -228,10 +233,10 @@ class HomeViewModelTest {
 
         viewModel.selectCategory(NewsCategory.Sports)
 
-        val state = viewModel.uiState.value
+        val state = viewModel.uiState.value.feed
         assertEquals(listOf(1, 2, 1), repository.requestedPages)
         assertEquals(NewsCategory.Sports, repository.requestedCategories.last())
-        assertEquals(NewsCategory.Sports, state.category)
+        assertEquals(NewsCategory.Sports, viewModel.uiState.value.category)
         assertEquals(listOf("x"), state.articles.map { it.title })
         assertEquals(1, state.currentPage)
     }
@@ -258,8 +263,8 @@ class HomeViewModelTest {
         viewModel.selectCategory(NewsCategory.Science)
         gate.complete(Unit)
 
-        val state = viewModel.uiState.value
-        assertEquals(NewsCategory.Science, state.category)
+        val state = viewModel.uiState.value.feed
+        assertEquals(NewsCategory.Science, viewModel.uiState.value.category)
         assertEquals(listOf("science"), state.articles.map { it.title })
     }
 
@@ -273,7 +278,7 @@ class HomeViewModelTest {
 
         viewModel.refresh()
 
-        val state = viewModel.uiState.value
+        val state = viewModel.uiState.value.feed
         assertEquals(listOf(1, 2, 1), repository.requestedPages)
         assertFalse(state.isRefreshing)
         assertEquals(listOf("new"), state.articles.map { it.title })
@@ -288,7 +293,7 @@ class HomeViewModelTest {
 
         viewModel.refresh()
 
-        viewModel.uiState.value.let { state ->
+        viewModel.uiState.value.feed.let { state ->
             assertFalse(state.isRefreshing)
             assertNull(state.error)
             assertEquals(ErrorType.NoInternet, state.refreshError)
@@ -297,6 +302,31 @@ class HomeViewModelTest {
 
         viewModel.refreshErrorShown()
 
-        assertNull(viewModel.uiState.value.refreshError)
+        assertNull(viewModel.uiState.value.feed.refreshError)
+    }
+
+    @Test
+    fun `bookmarking an article saves it and marks it as saved`() {
+        repository.results += success("a", "b")
+        val viewModel = createViewModel()
+        val article = viewModel.uiState.value.feed.articles.first()
+
+        viewModel.toggleBookmark(article)
+
+        assertEquals(setOf(article.url), viewModel.uiState.value.bookmarkedUrls)
+        assertEquals(listOf(article), bookmarks.bookmarks.value)
+    }
+
+    @Test
+    fun `bookmarking a saved article removes it`() {
+        repository.results += success("a")
+        val viewModel = createViewModel()
+        val article = viewModel.uiState.value.feed.articles.first()
+        viewModel.toggleBookmark(article)
+
+        viewModel.toggleBookmark(article)
+
+        assertTrue(viewModel.uiState.value.bookmarkedUrls.isEmpty())
+        assertTrue(bookmarks.bookmarks.value.isEmpty())
     }
 }

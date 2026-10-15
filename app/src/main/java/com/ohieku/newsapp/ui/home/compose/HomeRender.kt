@@ -9,7 +9,7 @@ import com.ohieku.newsapp.extensions.utils.openInBrowser
 import com.ohieku.newsapp.ui.home.HomeViewModel
 
 @Composable
-fun renderHomeScreen() {
+fun renderHomeScreen(onSearchTapped: () -> Unit) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -18,8 +18,10 @@ fun renderHomeScreen() {
         onFetchNextPageTapped = viewModel::fetchNextPage,
         onRetryTapped = viewModel::retry,
         onArticleTapped = { url -> context.openInBrowser(url) },
+        onBookmarkTapped = viewModel::toggleBookmark,
         onCategorySelected = viewModel::selectCategory,
         onRefresh = viewModel::refresh,
-        onRefreshErrorShown = viewModel::refreshErrorShown
+        onRefreshErrorShown = viewModel::refreshErrorShown,
+        onSearchTapped = onSearchTapped
     )
 }
