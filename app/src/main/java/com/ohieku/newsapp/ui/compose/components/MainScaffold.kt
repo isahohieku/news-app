@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -37,29 +35,18 @@ import androidx.compose.ui.unit.dp
 import com.ohieku.newsapp.R
 import com.ohieku.newsapp.ui.compose.theme.LocalNewsColors
 
-/** The broadcast wordmark: initials in a red box, then the name in caps. */
+/** The broadcast wordmark: the name in caps. */
 @Composable
 fun Wordmark() {
-    val colors = LocalNewsColors.current
     val name = stringResource(R.string.app_title)
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Text(
+        text = name.uppercase(),
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.clearAndSetSemantics {
             contentDescription = name
             heading()
         }
-    ) {
-        Text(
-            text = stringResource(R.string.brand_mark),
-            style = MaterialTheme.typography.titleLarge,
-            color = colors.onBrandFill,
-            modifier = Modifier
-                .background(colors.brandFill)
-                .padding(horizontal = 6.dp, vertical = 1.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(text = name.uppercase(), style = MaterialTheme.typography.titleLarge)
-    }
+    )
 }
 
 /**
