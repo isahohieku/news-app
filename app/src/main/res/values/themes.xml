@@ -4,7 +4,7 @@
     <style name="Theme.NewsApp" parent="android:Theme.Material.Light.NoActionBar" />
 
      <style name="SplashScreenTheme" parent="Theme.SplashScreen">
-         <item name="windowSplashScreenBackground">@color/white</item>
+         <item name="windowSplashScreenBackground">@color/chrome</item>
          <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
          <item name="postSplashScreenTheme">@style/Theme.NewsApp</item>
      </style>
