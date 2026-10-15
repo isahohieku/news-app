@@ -36,4 +36,5 @@ dependencies {
     implementation(Dependencies.coreKtx)
     implementation(Dependencies.appCompat)
     implementation(Dependencies.composeMaterial3)
+    testImplementation(Dependencies.jUnitTest)
 }
