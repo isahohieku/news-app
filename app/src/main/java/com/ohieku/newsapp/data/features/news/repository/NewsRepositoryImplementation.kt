@@ -37,19 +37,34 @@ class NewsRepositoryImplementation @Inject constructor(
         return result
     }
 
-    private suspend fun fetch(country: String, category: NewsCategory, page: Int): ResourceState<NewsModel> {
-        val result = newsDataSource.getNewsHeadline(country, category.apiValue, page)
-        val error = (result as? ResourceState.Error)?.error as? ApiException
+    override suspend fun searchNews(query: String, page: Int): ResourceState<NewsModel> {
+        // Without a language NewsAPI mixes every language; unsupported device languages search them all
+        val deviceLanguage = when (val language = localeProvider.getDefaultLocale().language) {
+            "iw" -> "he" // Older Java locales still report Hebrew under its legacy code
+            else -> language
+        }
+        val language = deviceLanguage.takeIf { it in SEARCH_LANGUAGES }
+        return newsDataSource.searchNews(query, language, page).endOfResultsAsEmpty()
+    }
 
-        // NewsAPI answers 426 once the account's result limit is passed; treat it as the end of the list
+    private suspend fun fetch(country: String, category: NewsCategory, page: Int): ResourceState<NewsModel> {
+        return newsDataSource.getNewsHeadline(country, category.apiValue, page).endOfResultsAsEmpty()
+    }
+
+    // NewsAPI answers 426 once the account's result limit is passed; treat it as the end of the list
+    private fun ResourceState<NewsModel>.endOfResultsAsEmpty(): ResourceState<NewsModel> {
+        val error = (this as? ResourceState.Error)?.error as? ApiException
         return if (error?.statusCode == HTTP_MAX_RESULTS_REACHED) {
             ResourceState.Success(NewsModel(status = "ok", totalResults = 0, articles = emptyList()))
         } else {
-            result
+            this
         }
     }
 
     companion object {
         private const val HTTP_MAX_RESULTS_REACHED = 426
+
+        // Languages the /everything endpoint accepts
+        private val SEARCH_LANGUAGES = setOf("ar", "de", "en", "es", "fr", "he", "it", "nl", "no", "pt", "ru", "sv", "ud", "zh")
     }
 }

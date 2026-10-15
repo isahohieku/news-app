@@ -36,6 +36,19 @@ class NewsRepositoryImplementationTest {
             categories += category
             return respond(country, page)
         }
+
+        val searches = mutableListOf<Triple<String, String?, Int>>()
+
+        override suspend fun searchNews(
+            query: String,
+            language: String?,
+            page: Int,
+            pageSize: Int,
+            sortBy: String
+        ): Response<NewsDto> {
+            searches += Triple(query, language, page)
+            return Response.success(news(1))
+        }
     }
 
     companion object {
@@ -135,5 +148,32 @@ class NewsRepositoryImplementationTest {
         repository.getNewsHeadline(NewsCategory.Top, 1)
 
         assertEquals(listOf("technology", null), api.categories)
+    }
+
+    @Test
+    fun `search uses the device language when NewsAPI supports it`() = runTest {
+        Locale.setDefault(Locale.GERMANY)
+
+        repository.searchNews("klima", 2)
+
+        assertEquals(listOf(Triple("klima", "de", 2)), api.searches)
+    }
+
+    @Test
+    fun `search covers every language when the device language is unsupported`() = runTest {
+        Locale.setDefault(Locale("yo", "NG"))
+
+        repository.searchNews("news", 1)
+
+        assertEquals(listOf(Triple("news", null, 1)), api.searches)
+    }
+
+    @Test
+    fun `hebrew is sent as he whichever code the locale reports`() = runTest {
+        Locale.setDefault(Locale("he", "IL"))
+
+        repository.searchNews("news", 1)
+
+        assertEquals("he", api.searches.single().second)
     }
 }

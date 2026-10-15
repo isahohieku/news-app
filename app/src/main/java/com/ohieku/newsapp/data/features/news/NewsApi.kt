@@ -14,5 +14,16 @@ interface NewsApi {
         @Query("page") page: Int,
     ): Response<NewsDto>
 
+    @GET("everything")
+    suspend fun searchNews(
+        @Query("q") query: String,
+        @Query("language") language: String?,
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int = SEARCH_PAGE_SIZE,
+        @Query("sortBy") sortBy: String = "publishedAt",
+    ): Response<NewsDto>
 
+    companion object {
+        const val SEARCH_PAGE_SIZE = 20
+    }
 }

@@ -18,4 +18,11 @@ class NewsDataSource @Inject constructor(
             mapper = newsDtoToDomainModel,
         )
     }
+
+    suspend fun searchNews(query: String, language: String?, page: Int): ResourceState<NewsModel> {
+        return apiResponseHandler.handleResponseMapping(
+            call = { newsApi.searchNews(query, language, page) },
+            mapper = newsDtoToDomainModel,
+        )
+    }
 }

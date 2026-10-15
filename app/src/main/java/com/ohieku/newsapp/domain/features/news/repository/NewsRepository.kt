@@ -6,4 +6,6 @@ import com.ohieku.newsapp.domain.features.news.model.NewsModel
 
 interface NewsRepository {
     suspend fun getNewsHeadline(category: NewsCategory, page: Int): ResourceState<NewsModel>
+
+    suspend fun searchNews(query: String, page: Int): ResourceState<NewsModel>
 }
