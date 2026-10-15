@@ -33,7 +33,7 @@ Central News shows today's top headlines from many publishers in one Android app
 - Stack: Kotlin, Jetpack Compose, Material 3 1.2.1, Hilt, Retrofit, Coil. minSdk 24, targetSdk 34.
 
 ## Brand Commitments
-- Name: **Central News** (the launcher label currently reads "News App"; open decision to align it).
+- Name: **Central News**, used for both the launcher label and the in-app wordmark.
 - Brand colour must match the app icon: icon red **#E20101** (a white newspaper glyph on a red field, `ic_launcher-playstore.png`). The earlier orange #FF5A00 does not match the icon.
 
 ## Evidence on Hand
