@@ -1,6 +1,7 @@
 package com.ohieku.newsapp.ui.home.compose
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ internal fun HomeScreen(
     onSearchTapped: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val categoryListState = rememberLazyListState()
     val refreshErrorMessage = state.feed.refreshError?.let { stringResource(it.messageRes()) }
 
     LaunchedEffect(state.feed.refreshError) {
@@ -62,7 +64,8 @@ internal fun HomeScreen(
             header = {
                 OverviewSection(
                     selectedCategory = state.category,
-                    onCategorySelected = onCategorySelected
+                    onCategorySelected = onCategorySelected,
+                    listState = categoryListState
                 )
             }
         )

@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BusinessCenter
@@ -27,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -63,11 +66,26 @@ private val NewsCategory.icon: ImageVector
         NewsCategory.Technology -> Icons.Filled.Memory
     }
 
+/**
+ * [listState] should be hoisted by the screen: the row is recreated whenever the feed switches between
+ * loading and list states, and a fresh state would scroll the selected category back out of view.
+ */
 @Composable
 fun OverviewSection(
     selectedCategory: NewsCategory,
-    onCategorySelected: (NewsCategory) -> Unit
+    onCategorySelected: (NewsCategory) -> Unit,
+    listState: LazyListState = rememberLazyListState()
 ) {
+    LaunchedEffect(selectedCategory) {
+        val index = selectedCategory.ordinal
+        val layoutInfo = listState.layoutInfo
+        val item = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+        val fullyVisible = item != null &&
+            item.offset >= layoutInfo.viewportStartOffset &&
+            item.offset + item.size <= layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
+        if (!fullyVisible) listState.animateScrollToItem(index)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -82,6 +100,7 @@ fun OverviewSection(
         )
 
         LazyRow(
+            state = listState,
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
