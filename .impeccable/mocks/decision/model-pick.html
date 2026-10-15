@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=393">
+<title>Central News — Broadcast Bulletin</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:393px;height:808px;overflow:hidden;background:#F2F3F5;color:#0D0F14;font-family:Archivo,sans-serif}
+.bar{height:56px;background:#0D0F14;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.brand{font:800 19px Archivo;letter-spacing:.4px;text-transform:uppercase}
+.brand b{background:#E20101;padding:2px 6px;margin-right:6px}
+.tabs{display:flex;gap:18px;background:#0D0F14;color:#AEB4BF;padding:0 16px;height:44px;align-items:center;font:600 14px Archivo}
+.tabs .on{color:#fff;border-bottom:3px solid #E20101;padding:11px 0 8px}
+.lead{position:relative;height:300px;background:linear-gradient(160deg,#596273,#252a33)}
+.bug{position:absolute;top:14px;right:14px;background:rgba(13,15,20,.85);color:#fff;font:600 12px Archivo;padding:4px 8px}
+.lower{position:absolute;left:0;right:0;bottom:0}
+.lower .tag{display:inline-block;background:#E20101;color:#fff;font:800 12px Archivo;letter-spacing:1px;padding:5px 10px;text-transform:uppercase}
+.lower h1{background:#fff;font:800 24px/28px Archivo;padding:12px 16px}
+.order{background:#fff;margin-top:8px}
+.row{display:grid;grid-template-columns:52px 1fr;padding:14px 16px;border-bottom:1px solid #E1E3E8;gap:8px}
+.row .t{font:600 13px Archivo;color:#E20101;font-variant-numeric:tabular-nums}
+.row h2{font:600 16px/21px Archivo}
+.row p{font:500 12px Archivo;color:#5A606C;margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+.ticker{position:absolute;bottom:72px;left:0;right:0;height:36px;background:#E20101;color:#fff;display:flex;align-items:center;font:600 13px Archivo;white-space:nowrap;overflow:hidden}
+.ticker b{background:#0D0F14;height:100%;display:flex;align-items:center;padding:0 10px;margin-right:12px}
+nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;display:flex;justify-content:space-around;align-items:center;font:600 12px Archivo;border-top:1px solid #E1E3E8}
+nav span{display:flex;flex-direction:column;align-items:center;gap:4px}
+nav span:before{content:"";width:22px;height:22px;background:#0D0F14;border-radius:4px}
+nav .on{color:#E20101}nav .on:before{background:#E20101}
+</style></head><body>
+<div class="bar"><div class="brand"><b>CN</b>Central News</div></div>
+<div class="tabs"><span class="on">Top</span><span>Business</span><span>Health</span><span>Science</span><span>Sports</span></div>
+<div class="lead"><span class="bug">23 MIN AGO</span>
+ <div class="lower"><span class="tag">ESPN</span><h1>Ohtani will be in Dodgers' Game 3 NLCS lineup, Roberts says</h1></div></div>
+<div class="order">
+ <div class="row"><span class="t">41m</span><div><h2>Rare fossil of T. rex cousin goes on display before auction</h2><p>Associated Press</p></div></div>
+ <div class="row"><span class="t">1h</span><div><h2>Doctors warn the flu is having a 'very early' surge</h2><p>HuffPost</p></div></div>
+</div>
+<div class="ticker"><b>NEXT</b>FTC says Shkreli livestreamed himself violating pharma ban · Ars Technica</div>
+<nav><span class="on">Home</span><span>Saved</span></nav>
+</body></html>

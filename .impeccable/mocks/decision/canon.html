@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=393">
+<title>Central News — Category standard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:393px;height:808px;overflow:hidden;background:#fff;color:#1F1F1F;font-family:Roboto,sans-serif}
+.bar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font:500 22px Roboto}
+.bar i{width:24px;height:24px;border:2.5px solid #444;border-radius:50%}
+.chips{display:flex;gap:8px;padding:0 16px 12px;overflow:hidden}
+.chips span{flex:none;height:32px;padding:0 14px;border:1px solid #C4C7C5;border-radius:8px;display:flex;align-items:center;font:500 14px Roboto}
+.chips .on{background:#FCE8E8;border-color:#FCE8E8;color:#B30000}
+.top{margin:4px 16px 12px;border-radius:16px;overflow:hidden;background:#F1F3F4}
+.top .img{height:190px;background:linear-gradient(135deg,#6b7280,#374151)}
+.top .tx{padding:12px 14px 14px}
+.src{font:500 12px Roboto;color:#5F6368}
+.top h1{font:500 20px/26px Roboto;margin-top:6px}
+.row{display:grid;grid-template-columns:1fr 88px;gap:12px;padding:12px 16px;border-top:1px solid #E8EAED}
+.row h2{font:500 16px/22px Roboto;margin-top:4px}
+.row .th{width:88px;height:88px;border-radius:12px;background:#C9CDD2}
+nav{position:absolute;bottom:0;left:0;right:0;height:80px;background:#F7F2FA;display:flex;justify-content:space-around;align-items:center;font:500 12px Roboto}
+nav span{display:flex;flex-direction:column;align-items:center;gap:6px}
+nav span:before{content:"";width:56px;height:30px;border-radius:15px;background:transparent;border:2px solid #444}
+nav .on:before{background:#FCE8E8;border-color:#FCE8E8}
+</style></head><body>
+<div class="bar">Central News<i></i></div>
+<div class="chips"><span class="on">Top stories</span><span>Business</span><span>Health</span><span>Science</span></div>
+<div class="top"><div class="img"></div><div class="tx"><div class="src">ESPN · 23 min ago</div><h1>Ohtani will be in Dodgers' Game 3 NLCS lineup, Roberts says</h1></div></div>
+<div class="row"><div><div class="src">Associated Press · 41 min</div><h2>Rare fossil of T. rex cousin goes on display before auction</h2></div><span class="th"></span></div>
+<div class="row"><div><div class="src">HuffPost · 1 hr</div><h2>Doctors warn the flu is having a 'very early' surge</h2></div><span class="th"></span></div>
+<nav><span class="on">Home</span><span>Saved</span></nav>
+</body></html>
