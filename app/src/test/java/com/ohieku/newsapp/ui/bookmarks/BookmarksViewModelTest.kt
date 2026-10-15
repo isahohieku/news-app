@@ -50,8 +50,31 @@ class BookmarksViewModelTest {
         repository.addBookmark(article("b"))
         val viewModel = BookmarksViewModel(repository)
 
-        viewModel.removeBookmark("https://example.com/a")
+        viewModel.toggleBookmark(article("a"))
 
         assertEquals(listOf("b"), viewModel.uiState.value.bookmarks.map { it.title })
+    }
+
+    @Test
+    fun `undo puts a removed bookmark back`() = runTest {
+        repository.addBookmark(article("a"))
+        val viewModel = BookmarksViewModel(repository)
+        viewModel.toggleBookmark(article("a"))
+
+        viewModel.toggleBookmark(article("a"))
+
+        assertEquals(listOf("a"), viewModel.uiState.value.bookmarks.map { it.title })
+    }
+
+    @Test
+    fun `restoring explicitly works even before the removal has reached the list`() = runTest {
+        repository.addBookmark(article("a"))
+        val viewModel = BookmarksViewModel(repository)
+
+        viewModel.setBookmarked(article("a"), saved = false)
+        viewModel.setBookmarked(article("a"), saved = true)
+        viewModel.setBookmarked(article("a"), saved = true)
+
+        assertEquals(listOf("a"), viewModel.uiState.value.bookmarks.map { it.title })
     }
 }

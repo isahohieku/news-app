@@ -9,7 +9,7 @@ import com.ohieku.newsapp.extensions.utils.openInBrowser
 import com.ohieku.newsapp.ui.search.SearchViewModel
 
 @Composable
-fun renderSearchScreen(onBackTapped: () -> Unit) {
+fun renderSearchScreen(onBackTapped: () -> Unit, onOpenSaved: () -> Unit) {
     val viewModel: SearchViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -21,6 +21,7 @@ fun renderSearchScreen(onBackTapped: () -> Unit) {
         onFetchNextPageTapped = viewModel::fetchNextPage,
         onRetryTapped = viewModel::retry,
         onArticleTapped = { url -> context.openInBrowser(url) },
-        onBookmarkTapped = viewModel::toggleBookmark
+        onSetBookmarked = viewModel::setBookmarked,
+        onOpenSaved = onOpenSaved
     )
 }

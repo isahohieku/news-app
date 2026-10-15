@@ -1,12 +1,18 @@
 package com.ohieku.newsapp.ui.home.compose
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -21,17 +27,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.ohieku.newsapp.R
+import com.ohieku.newsapp.data.network.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
+import com.ohieku.newsapp.ui.common.bodyRes
+import com.ohieku.newsapp.ui.common.isConnectivity
 import com.ohieku.newsapp.ui.common.messageRes
 import com.ohieku.newsapp.ui.common.paging.PagedArticles
 
 private const val LOAD_MORE_THRESHOLD = 5
 
 /**
- * A paged list of article cards with loading, error and empty states.
- * [header] scrolls with the list and stays on screen in the other states; [onRefresh] enables pull-to-refresh.
+ * The bulletin: an optional lead story, then the running order, with loading, error and empty states.
+ * [onRefresh] enables pull-to-refresh; [onOpenSaved] adds an "Open Saved" way out of connection errors.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ArticleFeed(
     feed: PagedArticles,
@@ -41,12 +52,19 @@ fun ArticleFeed(
     onArticleTapped: (url: String) -> Unit,
     onBookmarkTapped: (Article) -> Unit,
     modifier: Modifier = Modifier,
+    showLead: Boolean = true,
+    listState: LazyListState = rememberLazyListState(),
     onRefresh: (() -> Unit)? = null,
-    header: (@Composable () -> Unit)? = null,
-    emptyContent: @Composable () -> Unit = { EmptyState() },
+    onOpenSaved: (() -> Unit)? = null,
+    emptyContent: @Composable () -> Unit = {
+        StatusMessage(
+            icon = Icons.Outlined.Newspaper,
+            title = stringResource(R.string.feed_empty_title),
+            body = stringResource(R.string.feed_empty_body)
+        )
+    },
 ) {
     if (feed.articles.isNotEmpty() && !feed.isLoading) {
-        val listState = rememberLazyListState()
         val isNearEnd by remember {
             derivedStateOf {
                 val layoutInfo = listState.layoutInfo
@@ -75,34 +93,30 @@ fun ArticleFeed(
                 .clipToBounds()
                 .nestedScroll(pullToRefreshState.nestedScrollConnection)
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (header != null) {
-                    item {
-                        header()
-                    }
-                }
-
+            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(
                     items = feed.articles,
                     key = { index, article -> article.url ?: "no-url-$index" }
-                ) { _, article ->
-                    NewsCardComponent(
-                        article = article,
-                        onClick = article.url?.let { url -> { onArticleTapped(url) } },
-                        isBookmarked = article.url in bookmarkedUrls,
-                        onBookmarkClick = article.url?.let { { onBookmarkTapped(article) } }
-                    )
+                ) { index, article ->
+                    val onClick = article.url?.let { url -> { onArticleTapped(url) } }
+                    val onBookmarkClick = article.url?.let { { onBookmarkTapped(article) } }
+                    val isBookmarked = article.url in bookmarkedUrls
+
+                    if (showLead && index == 0) {
+                        LeadStory(article, onClick, isBookmarked, onBookmarkClick, Modifier.animateItemPlacement())
+                        // A strip of ground separates the lead from the running order
+                        Spacer(Modifier.height(8.dp))
+                    } else {
+                        RunningOrderRow(article, onClick, isBookmarked, onBookmarkClick, Modifier.animateItemPlacement())
+                    }
                 }
 
                 if (feed.isLoadingMore) {
-                    item {
+                    item(key = "loading-more") {
                         LoadMoreIndicator()
                     }
                 } else if (feed.error != null) {
-                    item {
+                    item(key = "page-error") {
                         PageErrorFooter(stringResource(feed.error.messageRes()), onRetry)
                     }
                 }
@@ -117,17 +131,24 @@ fun ArticleFeed(
             }
         }
     } else {
-        // Keep the header on screen so, e.g., an empty category can be switched away from
-        Column(modifier = modifier.fillMaxSize()) {
-            header?.invoke()
-
-            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                when {
-                    feed.isLoading -> Loader()
-                    feed.error != null -> ErrorState(stringResource(feed.error.messageRes()), onRetry)
-                    else -> emptyContent()
-                }
+        Box(modifier = modifier.fillMaxSize()) {
+            when {
+                feed.isLoading -> Loader()
+                feed.error != null -> FeedErrorState(feed.error, onRetry, onOpenSaved)
+                else -> emptyContent()
             }
         }
     }
+}
+
+@Composable
+private fun FeedErrorState(error: ErrorType, onRetry: () -> Unit, onOpenSaved: (() -> Unit)?) {
+    StatusMessage(
+        icon = if (error.isConnectivity) Icons.Outlined.CloudOff else Icons.Outlined.ErrorOutline,
+        title = stringResource(error.messageRes()),
+        body = stringResource(error.bodyRes()),
+        primaryAction = stringResource(R.string.retry) to onRetry,
+        // Saved stories live on the device, so they are the way forward when the network is the problem
+        secondaryAction = onOpenSaved?.takeIf { error.isConnectivity }?.let { stringResource(R.string.open_saved) to it }
+    )
 }

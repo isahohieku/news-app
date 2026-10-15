@@ -16,6 +16,6 @@ fun renderBookmarksScreen() {
     BookmarksScreen(
         state = state,
         onArticleTapped = { url -> context.openInBrowser(url) },
-        onRemoveTapped = viewModel::removeBookmark
+        onSetBookmarked = viewModel::setBookmarked
     )
 }

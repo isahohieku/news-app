@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">News App</string>
-    <string name="no_news_at_the_moment_please_check_again_later">No news at the moment\nPlease check again later</string>
-    <string name="retry">Retry</string>
     <string name="app_title">Central News</string>
-    <string name="categories_title">CATEGORIES</string>
+    <!-- Initials in the red box of the wordmark -->
+    <string name="brand_mark">CN</string>
+
     <string name="category_top">Top</string>
     <string name="category_business">Business</string>
     <string name="category_entertainment">Entertainment</string>
@@ -11,24 +11,54 @@
     <string name="category_science">Science</string>
     <string name="category_sports">Sports</string>
     <string name="category_technology">Technology</string>
-    <string name="error_no_internet">No Internet, please check and try again</string>
-    <string name="error_timeout">The server took too long to respond, try again</string>
-    <string name="error_cannot_connect">Can\'t connect, please try again later</string>
-    <string name="error_unavailable">News is unavailable right now, try again later</string>
-    <string name="error_rate_limited">Too many requests, try again later</string>
-    <string name="error_server">Cannot contact server, try again later</string>
-    <string name="error_generic">Something went wrong, please try again later</string>
+
+    <string name="retry">Retry</string>
+    <string name="open_saved">Open Saved</string>
+    <string name="open_article">Open article</string>
     <string name="no_browser_found">No app can open this link</string>
+
+    <string name="error_no_internet">You\'re offline</string>
+    <string name="error_no_internet_body">Check your connection and try again. Your saved stories are still here.</string>
+    <string name="error_timeout">That took too long</string>
+    <string name="error_timeout_body">The news service is slow right now. Try again in a moment.</string>
+    <string name="error_cannot_connect">Can\'t reach the news service</string>
+    <string name="error_unavailable">News is unavailable right now</string>
+    <string name="error_unavailable_body">The news service isn\'t responding. Try again later.</string>
+    <string name="error_rate_limited">Too many requests</string>
+    <string name="error_rate_limited_body">Today\'s request limit has been reached. Try again later.</string>
+    <string name="error_server">The news service had a problem</string>
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_generic_body">Try again in a moment.</string>
+
+    <string name="feed_empty_title">No stories here yet</string>
+    <string name="feed_empty_body">Try another category or check back later.</string>
+
     <string name="search">Search</string>
     <string name="back">Back</string>
     <string name="clear_search">Clear search</string>
     <string name="search_placeholder">Search news</string>
-    <string name="search_hint">Search for topics, people or places</string>
+    <string name="search_hint_title">Search the news</string>
+    <string name="search_hint_body">Find stories by topic, person or place.</string>
     <string name="search_no_results">No results for “%1$s”</string>
+    <string name="search_no_results_body">Try different or fewer words.</string>
+
     <string name="nav_home">Home</string>
     <string name="nav_saved">Saved</string>
     <string name="bookmarks_title">Saved</string>
-    <string name="bookmarks_empty">No saved articles yet\nTap the bookmark on any story to keep it here</string>
+    <string name="bookmarks_empty_title">Nothing saved yet</string>
+    <string name="bookmarks_empty_body">Tap the bookmark on any story to keep it here, even offline.</string>
     <string name="bookmark_add">Save article</string>
     <string name="bookmark_remove">Remove from saved</string>
+    <string name="bookmark_saved">Saved</string>
+    <string name="bookmark_removed">Removed from Saved</string>
+    <string name="bookmark_view">View</string>
+    <string name="undo">Undo</string>
+
+    <!-- Compact times for the running order's time column -->
+    <string name="time_just_now">Now</string>
+    <string name="time_minutes_short">%1$dm</string>
+    <string name="time_hours_short">%1$dh</string>
+    <string name="time_days_short">%1$dd</string>
+    <!-- The lead photo's time bug, in the same units as the time column -->
+    <string name="time_bug">%1$s ago</string>
 </resources>

@@ -50,6 +50,13 @@ class HomeViewModel @Inject constructor(
         pager.start()
     }
 
+    fun setBookmarked(article: Article, saved: Boolean) {
+        if (article.url == null) return
+        viewModelScope.launch {
+            if (saved) bookmarkRepository.addBookmark(article) else bookmarkRepository.removeBookmark(article.url)
+        }
+    }
+
     fun toggleBookmark(article: Article) {
         val url = article.url ?: return
         val isBookmarked = url in uiState.value.bookmarkedUrls
