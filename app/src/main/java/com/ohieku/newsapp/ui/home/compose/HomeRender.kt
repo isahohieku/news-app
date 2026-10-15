@@ -16,9 +16,9 @@ fun renderHomeScreen(
     onOpenSaved: () -> Unit,
     scrollToTopSignal: Int,
     requestedCategory: NewsCategory? = null,
-    onRequestedCategoryHandled: () -> Unit = {}
+    onRequestedCategoryHandled: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val viewModel: HomeViewModel = hiltViewModel()
     // A category picked elsewhere (Search's "Browse a category") arrives here once
     LaunchedEffect(requestedCategory) {
         if (requestedCategory != null) {

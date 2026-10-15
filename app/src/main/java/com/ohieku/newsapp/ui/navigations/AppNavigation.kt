@@ -11,9 +11,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,10 +32,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -36,6 +46,8 @@ import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ohieku.newsapp.ui.compose.theme.LocalNewsColors
 import com.ohieku.newsapp.ui.bookmarks.compose.renderBookmarksScreen
+import com.ohieku.newsapp.ui.home.HomeViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ohieku.newsapp.ui.home.compose.renderHomeScreen
 import com.ohieku.newsapp.ui.search.compose.renderSearchScreen
 
@@ -52,7 +64,10 @@ private enum class TopLevelDestination(
 }
 
 @Composable
-fun AppNavigationGraph(navController: NavHostController) {
+fun AppNavigationGraph(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
@@ -96,7 +111,8 @@ fun AppNavigationGraph(navController: NavHostController) {
                     requestedCategory = requestedCategory?.let { name ->
                         NewsCategory.entries.firstOrNull { it.name == name }
                     },
-                    onRequestedCategoryHandled = { entry.savedStateHandle[REQUESTED_CATEGORY_KEY] = null }
+                    onRequestedCategoryHandled = { entry.savedStateHandle[REQUESTED_CATEGORY_KEY] = null },
+                    viewModel = homeViewModel
                 )
             }
             composable(Routes.SEARCH_SCREEN) {
@@ -119,32 +135,44 @@ fun AppNavigationGraph(navController: NavHostController) {
 
 @Composable
 private fun AppBottomBar(currentRoute: String?, onDestinationSelected: (TopLevelDestination) -> Unit) {
-    Column {
-        HorizontalDivider(color = LocalNewsColors.current.hairline)
-        NavigationBar(
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
-        ) {
-            TopLevelDestination.entries.forEach { destination ->
-                val selected = destination.route == currentRoute
-                NavigationBarItem(
-                    icon = {
+    // Compact bar: M3 NavigationBar enforces an 80dp min height, which felt oversized here
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.windowInsetsPadding(NavigationBarDefaults.windowInsets)) {
+            HorizontalDivider(color = LocalNewsColors.current.hairline)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .selectableGroup()
+            ) {
+                TopLevelDestination.entries.forEach { destination ->
+                    val selected = destination.route == currentRoute
+                    val tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .selectable(
+                                selected = selected,
+                                onClick = { onDestinationSelected(destination) },
+                                role = Role.Tab
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         Icon(
                             imageVector = if (selected) destination.selectedIcon else destination.unselectedIcon,
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = tint,
+                            modifier = Modifier.size(20.dp)
                         )
-                    },
-                    label = { Text(stringResource(destination.labelRes)) },
-                    selected = selected,
-                    onClick = { onDestinationSelected(destination) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = Color.Transparent,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
+                        Text(
+                            text = stringResource(destination.labelRes),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 13.sp, letterSpacing = 0.2.sp),
+                            color = tint
+                        )
+                    }
+                }
             }
         }
     }
