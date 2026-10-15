@@ -1,8 +1,8 @@
 package com.ohieku.newsapp.ui.common.paging
 
-import com.ohieku.newsapp.data.common.ResourceState
-import com.ohieku.newsapp.data.network.ApiException
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.AppException
+import com.ohieku.newsapp.domain.common.ResourceState
+import com.ohieku.newsapp.domain.common.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
 import kotlinx.coroutines.CoroutineScope
@@ -99,7 +99,7 @@ class ArticlePager(
                 }
 
                 is ResourceState.Error -> {
-                    val type = (result.error as? ApiException)?.type ?: ErrorType.Unknown
+                    val type = (result.error as? AppException)?.type ?: ErrorType.Unknown
                     _state.update { currentState ->
                         if (replace) {
                             currentState.copy(isRefreshing = false, refreshError = type)

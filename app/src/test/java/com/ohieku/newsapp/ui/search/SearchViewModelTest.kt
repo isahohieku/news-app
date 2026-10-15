@@ -1,6 +1,8 @@
 package com.ohieku.newsapp.ui.search
 
-import com.ohieku.newsapp.data.common.ResourceState
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.ObserveBookmarkedUrlsUseCase
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.SetBookmarkedUseCase
+import com.ohieku.newsapp.domain.common.ResourceState
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
@@ -47,7 +49,8 @@ class SearchViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val repository = FakeNewsRepository()
     private val recents = FakeRecentSearchRepository()
-    private val viewModel by lazy { SearchViewModel(SearchNewsUseCase(repository), FakeBookmarkRepository(), recents) }
+    private val bookmarks = FakeBookmarkRepository()
+    private val viewModel by lazy { SearchViewModel(SearchNewsUseCase(repository), ObserveBookmarkedUrlsUseCase(bookmarks), SetBookmarkedUseCase(bookmarks), recents) }
 
     @Before
     fun setUp() {

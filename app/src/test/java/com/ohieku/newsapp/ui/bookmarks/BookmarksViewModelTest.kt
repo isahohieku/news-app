@@ -1,5 +1,7 @@
 package com.ohieku.newsapp.ui.bookmarks
 
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.ObserveBookmarksUseCase
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.SetBookmarkedUseCase
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.fakes.FakeBookmarkRepository
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +36,7 @@ class BookmarksViewModelTest {
 
     @Test
     fun `shows saved articles and updates when they change`() = runTest {
-        val viewModel = BookmarksViewModel(repository)
+        val viewModel = BookmarksViewModel(ObserveBookmarksUseCase(repository), SetBookmarkedUseCase(repository))
 
         assertFalse(viewModel.uiState.value.isLoading)
         assertTrue(viewModel.uiState.value.bookmarks.isEmpty())
@@ -48,9 +50,9 @@ class BookmarksViewModelTest {
     fun `removing a bookmark drops it from the list`() = runTest {
         repository.addBookmark(article("a"))
         repository.addBookmark(article("b"))
-        val viewModel = BookmarksViewModel(repository)
+        val viewModel = BookmarksViewModel(ObserveBookmarksUseCase(repository), SetBookmarkedUseCase(repository))
 
-        viewModel.toggleBookmark(article("a"))
+        viewModel.setBookmarked(article("a"), saved = false)
 
         assertEquals(listOf("b"), viewModel.uiState.value.bookmarks.map { it.title })
     }
@@ -58,10 +60,10 @@ class BookmarksViewModelTest {
     @Test
     fun `undo puts a removed bookmark back`() = runTest {
         repository.addBookmark(article("a"))
-        val viewModel = BookmarksViewModel(repository)
-        viewModel.toggleBookmark(article("a"))
+        val viewModel = BookmarksViewModel(ObserveBookmarksUseCase(repository), SetBookmarkedUseCase(repository))
+        viewModel.setBookmarked(article("a"), saved = false)
 
-        viewModel.toggleBookmark(article("a"))
+        viewModel.setBookmarked(article("a"), saved = true)
 
         assertEquals(listOf("a"), viewModel.uiState.value.bookmarks.map { it.title })
     }
@@ -69,7 +71,7 @@ class BookmarksViewModelTest {
     @Test
     fun `restoring explicitly works even before the removal has reached the list`() = runTest {
         repository.addBookmark(article("a"))
-        val viewModel = BookmarksViewModel(repository)
+        val viewModel = BookmarksViewModel(ObserveBookmarksUseCase(repository), SetBookmarkedUseCase(repository))
 
         viewModel.setBookmarked(article("a"), saved = false)
         viewModel.setBookmarked(article("a"), saved = true)

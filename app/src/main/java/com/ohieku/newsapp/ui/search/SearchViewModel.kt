@@ -2,7 +2,8 @@ package com.ohieku.newsapp.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ohieku.newsapp.domain.features.bookmarks.repository.BookmarkRepository
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.ObserveBookmarkedUrlsUseCase
+import com.ohieku.newsapp.domain.features.bookmarks.usecase.SetBookmarkedUseCase
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.usecase.SearchNewsUseCase
@@ -26,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchNewsUseCase: SearchNewsUseCase,
-    private val bookmarkRepository: BookmarkRepository,
+    observeBookmarkedUrls: ObserveBookmarkedUrlsUseCase,
+    private val setBookmarkedUseCase: SetBookmarkedUseCase,
     private val recentSearchRepository: RecentSearchRepository,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
@@ -42,7 +44,7 @@ class SearchViewModel @Inject constructor(
     val uiState: StateFlow<SearchUiState> = combine(
         query,
         pager.state,
-        bookmarkRepository.observeBookmarkedUrls(),
+        observeBookmarkedUrls(),
         sort,
         recentSearchRepository.observeRecentSearches(),
     ) { query, results, bookmarkedUrls, sort, recentSearches ->
@@ -96,14 +98,7 @@ class SearchViewModel @Inject constructor(
     fun retry() = pager.retry()
 
     fun setBookmarked(article: Article, saved: Boolean) {
-        if (article.url == null) return
-        viewModelScope.launch {
-            if (saved) bookmarkRepository.addBookmark(article) else bookmarkRepository.removeBookmark(article.url)
-        }
-    }
-
-    fun toggleBookmark(article: Article) {
-        setBookmarked(article, saved = article.url !in uiState.value.bookmarkedUrls)
+        viewModelScope.launch { setBookmarkedUseCase(article, saved) }
     }
 
     private fun rememberActiveQuery() {

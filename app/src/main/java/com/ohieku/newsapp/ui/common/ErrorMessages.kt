@@ -2,7 +2,7 @@ package com.ohieku.newsapp.ui.common
 
 import androidx.annotation.StringRes
 import com.ohieku.newsapp.R
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.ErrorType
 
 /** Short line for snackbars, page footers and the error title. */
 @StringRes

@@ -28,7 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ohieku.newsapp.R
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.ui.common.bodyRes
 import com.ohieku.newsapp.ui.common.isConnectivity

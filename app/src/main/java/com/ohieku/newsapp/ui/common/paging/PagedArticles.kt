@@ -1,6 +1,6 @@
 package com.ohieku.newsapp.ui.common.paging
 
-import com.ohieku.newsapp.data.network.ErrorType
+import com.ohieku.newsapp.domain.common.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 
 data class PagedArticles(
