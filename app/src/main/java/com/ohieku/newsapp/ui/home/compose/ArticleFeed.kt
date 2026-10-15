@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
@@ -35,6 +34,9 @@ import com.ohieku.newsapp.ui.common.bodyRes
 import com.ohieku.newsapp.ui.common.isConnectivity
 import com.ohieku.newsapp.ui.common.messageRes
 import com.ohieku.newsapp.ui.common.paging.PagedArticles
+import com.ohieku.newsapp.extensions.utils.StoryDay
+import com.ohieku.newsapp.extensions.utils.parsePublishedAt
+import com.ohieku.newsapp.extensions.utils.storyDay
 
 private const val LOAD_MORE_THRESHOLD = 5
 
@@ -53,6 +55,11 @@ fun ArticleFeed(
     onBookmarkTapped: (Article) -> Unit,
     modifier: Modifier = Modifier,
     showLead: Boolean = true,
+    timeStyle: TimeStyle = TimeStyle.Clock,
+    // Day headers keep clock times unambiguous; only meaningful when the list is in date order
+    groupByDay: Boolean = true,
+    // Names the first header ("Yesterday's top stories · as of 3:05 PM"); null shows plain day labels
+    bulletinName: String? = null,
     listState: LazyListState = rememberLazyListState(),
     onRefresh: (() -> Unit)? = null,
     onOpenSaved: (() -> Unit)? = null,
@@ -93,21 +100,44 @@ fun ArticleFeed(
                 .clipToBounds()
                 .nestedScroll(pullToRefreshState.nestedScrollConnection)
         ) {
-            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(
-                    items = feed.articles,
-                    key = { index, article -> article.url ?: "no-url-$index" }
-                ) { index, article ->
-                    val onClick = article.url?.let { url -> { onArticleTapped(url) } }
-                    val onBookmarkClick = article.url?.let { { onBookmarkTapped(article) } }
-                    val isBookmarked = article.url in bookmarkedUrls
+            val days = remember(feed.articles) {
+                val now = System.currentTimeMillis()
+                feed.articles.map { article -> parsePublishedAt(article.publishedAt)?.let { storyDay(it, now) } }
+            }
 
-                    if (showLead && index == 0) {
-                        LeadStory(article, onClick, isBookmarked, onBookmarkClick, Modifier.animateItemPlacement())
-                        // A strip of ground separates the lead from the running order
-                        Spacer(Modifier.height(8.dp))
-                    } else {
-                        RunningOrderRow(article, onClick, isBookmarked, onBookmarkClick, Modifier.animateItemPlacement())
+            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                feed.articles.forEachIndexed { index, article ->
+                    val day = days[index]
+                    if (groupByDay && day != null && (index == 0 || day != days[index - 1])) {
+                        item(key = "day-$index") {
+                            val label = dayLabel(day)
+                            val text = if (index == 0 && bulletinName != null) {
+                                bulletinHeader(day, label, bulletinName, feed.loadedAt)
+                            } else {
+                                label
+                            }
+                            ListHeader(text)
+                        }
+                    }
+                    item(key = article.url ?: "no-url-$index") {
+                        val onClick = article.url?.let { url -> { onArticleTapped(url) } }
+                        val onBookmarkClick = article.url?.let { { onBookmarkTapped(article) } }
+                        val isBookmarked = article.url in bookmarkedUrls
+
+                        if (showLead && index == 0) {
+                            LeadStory(article, onClick, isBookmarked, onBookmarkClick, Modifier.animateItemPlacement())
+                            // A strip of ground separates the lead from the running order
+                            Spacer(Modifier.height(8.dp))
+                        } else {
+                            RunningOrderRow(
+                                article = article,
+                                onClick = onClick,
+                                isBookmarked = isBookmarked,
+                                onBookmarkClick = onBookmarkClick,
+                                timeStyle = timeStyle,
+                                modifier = Modifier.animateItemPlacement()
+                            )
+                        }
                     }
                 }
 
@@ -151,4 +181,15 @@ private fun FeedErrorState(error: ErrorType, onRetry: () -> Unit, onOpenSaved: (
         // Saved stories live on the device, so they are the way forward when the network is the problem
         secondaryAction = onOpenSaved?.takeIf { error.isConnectivity }?.let { stringResource(R.string.open_saved) to it }
     )
+}
+
+/** "Yesterday's top stories · as of 3:05 PM": says plainly how old the bulletin is and when it was fetched. */
+@Composable
+private fun bulletinHeader(day: StoryDay, dayLabel: String, bulletinName: String, loadedAt: Long?): String {
+    val title = when (day) {
+        StoryDay.Today -> stringResource(R.string.feed_header_today, bulletinName)
+        StoryDay.Yesterday -> stringResource(R.string.feed_header_yesterday, bulletinName)
+        is StoryDay.OnDate -> stringResource(R.string.feed_header_date, bulletinName, dayLabel)
+    }
+    return if (loadedAt != null) stringResource(R.string.feed_header_as_of, title, formatClock(loadedAt)) else title
 }

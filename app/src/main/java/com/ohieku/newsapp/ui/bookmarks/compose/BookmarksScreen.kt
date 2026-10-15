@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.ohieku.newsapp.R
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.ui.bookmarks.BookmarksUiState
+import com.ohieku.newsapp.ui.common.rememberArticleOpener
 import com.ohieku.newsapp.ui.common.rememberBookmarkFeedback
 import com.ohieku.newsapp.ui.compose.components.MainScaffold
 import com.ohieku.newsapp.ui.compose.components.ScreenTitle
@@ -23,6 +24,7 @@ import com.ohieku.newsapp.ui.compose.theme.NewsAppTheme
 import com.ohieku.newsapp.ui.home.compose.Loader
 import com.ohieku.newsapp.ui.home.compose.RunningOrderRow
 import com.ohieku.newsapp.ui.home.compose.StatusMessage
+import com.ohieku.newsapp.ui.home.compose.TimeStyle
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -39,6 +41,7 @@ internal fun BookmarksScreen(
         onSetBookmarked = onSetBookmarked,
         onViewSaved = null
     )
+    val openArticle = rememberArticleOpener(snackbarHostState, onArticleTapped)
 
     MainScaffold(
         title = { ScreenTitle(stringResource(R.string.bookmarks_title)) },
@@ -64,9 +67,12 @@ internal fun BookmarksScreen(
                     val url = article.url.orEmpty()
                     RunningOrderRow(
                         article = article,
-                        onClick = { onArticleTapped(url) },
+                        onClick = { openArticle(url) },
                         isBookmarked = true,
                         onBookmarkClick = { onBookmarkTapped(article) },
+                        // Saved is ordered by when stories were saved, so each row carries its own date
+                        timeStyle = TimeStyle.DayOrClock,
+                        showDescription = true,
                         modifier = Modifier.animateItemPlacement()
                     )
                 }

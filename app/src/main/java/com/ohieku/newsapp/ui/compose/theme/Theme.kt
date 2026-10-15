@@ -26,6 +26,11 @@ data class NewsColors(
     val onBrandFill: Color,
     val hairline: Color,
     val imageWell: Color,
+    // Snackbars: a square ink bar in light, a raised outlined bar in dark, with a coral action that clears AA on both
+    val snackbar: Color,
+    val onSnackbar: Color,
+    val snackbarAction: Color,
+    val snackbarEdge: Color,
 )
 
 private val LightNewsColors = NewsColors(
@@ -36,6 +41,10 @@ private val LightNewsColors = NewsColors(
     onBrandFill = OnChrome,
     hairline = Hairline,
     imageWell = ImageWell,
+    snackbar = Ink,
+    onSnackbar = OnChrome,
+    snackbarAction = BrandRedOnDark,
+    snackbarEdge = Ink,
 )
 
 private val DarkNewsColors = NewsColors(
@@ -46,6 +55,10 @@ private val DarkNewsColors = NewsColors(
     onBrandFill = OnChrome,
     hairline = HairlineDark,
     imageWell = ImageWellDark,
+    snackbar = RaisedDark,
+    onSnackbar = TextOnDark,
+    snackbarAction = BrandRedOnDark,
+    snackbarEdge = RaisedEdgeDark,
 )
 
 val LocalNewsColors = staticCompositionLocalOf { LightNewsColors }
@@ -63,7 +76,15 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Ink,
     surfaceVariant = Ground,
     onSurfaceVariant = InkMuted,
+    surfaceContainerLowest = Sheet,
     surfaceContainerLow = Sheet,
+    surfaceContainer = Ground,
+    surfaceContainerHigh = ContainerHigh,
+    surfaceContainerHighest = ContainerHighest,
+    primaryContainer = RedContainer,
+    onPrimaryContainer = OnRedContainer,
+    secondaryContainer = ContainerHighest,
+    onSecondaryContainer = Ink,
     outline = InkMuted,
     outlineVariant = Hairline,
     inverseSurface = Ink,
@@ -86,7 +107,15 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = TextOnDark,
     surfaceVariant = GroundDark,
     onSurfaceVariant = TextMutedOnDark,
+    surfaceContainerLowest = GroundDark,
     surfaceContainerLow = SheetDark,
+    surfaceContainer = ContainerDark,
+    surfaceContainerHigh = ContainerHighDark,
+    surfaceContainerHighest = ContainerHighestDark,
+    primaryContainer = RedContainerDark,
+    onPrimaryContainer = OnRedContainerDark,
+    secondaryContainer = ContainerHighestDark,
+    onSecondaryContainer = TextOnDark,
     outline = TextMutedOnDark,
     outlineVariant = HairlineDark,
     inverseSurface = TextOnDark,

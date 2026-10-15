@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ohieku.newsapp.domain.features.bookmarks.repository.BookmarkRepository
 import com.ohieku.newsapp.domain.features.news.model.Article
+import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.usecase.SearchNewsUseCase
+import com.ohieku.newsapp.domain.features.search.repository.RecentSearchRepository
 import com.ohieku.newsapp.ui.common.paging.ArticlePager
 import com.ohieku.newsapp.ui.common.paging.PagedArticles
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,22 +27,32 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val searchNewsUseCase: SearchNewsUseCase,
     private val bookmarkRepository: BookmarkRepository,
+    private val recentSearchRepository: RecentSearchRepository,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
+    private val sort = MutableStateFlow(SearchSort.Relevance)
 
     // The query the current results belong to; typing changes [query] first and this after the debounce
     private var activeQuery = ""
 
     private val pager = ArticlePager(viewModelScope, initialState = PagedArticles.Idle) { page ->
-        searchNewsUseCase(activeQuery, page)
+        searchNewsUseCase(activeQuery, sort.value, page)
     }
 
     val uiState: StateFlow<SearchUiState> = combine(
         query,
         pager.state,
         bookmarkRepository.observeBookmarkedUrls(),
-    ) { query, results, bookmarkedUrls ->
-        SearchUiState(query = query, results = results, bookmarkedUrls = bookmarkedUrls)
+        sort,
+        recentSearchRepository.observeRecentSearches(),
+    ) { query, results, bookmarkedUrls, sort, recentSearches ->
+        SearchUiState(
+            query = query,
+            results = results,
+            bookmarkedUrls = bookmarkedUrls,
+            sort = sort,
+            recentSearches = recentSearches,
+        )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, SearchUiState())
 
     init {
@@ -53,8 +65,31 @@ class SearchViewModel @Inject constructor(
         query.value = value
     }
 
-    /** Searches straight away, e.g. from the keyboard's search key. */
-    fun search() = applyQuery(query.value)
+    /** Searches straight away, e.g. from the keyboard's search key, and remembers the query. */
+    fun search() {
+        applyQuery(query.value)
+        rememberActiveQuery()
+    }
+
+    /** Runs a recent search again. */
+    fun selectRecentSearch(value: String) {
+        query.value = value
+        applyQuery(value)
+        rememberActiveQuery()
+    }
+
+    fun clearRecentSearches() {
+        viewModelScope.launch { recentSearchRepository.clearRecentSearches() }
+    }
+
+    fun setSort(value: SearchSort) {
+        if (value == sort.value) return
+        sort.value = value
+        if (activeQuery.length >= MIN_QUERY_LENGTH) pager.start()
+    }
+
+    /** Opening a result is the clearest sign the query was worth keeping. */
+    fun onResultOpened() = rememberActiveQuery()
 
     fun fetchNextPage() = pager.fetchNextPage()
 
@@ -68,11 +103,13 @@ class SearchViewModel @Inject constructor(
     }
 
     fun toggleBookmark(article: Article) {
-        val url = article.url ?: return
-        val isBookmarked = url in uiState.value.bookmarkedUrls
-        viewModelScope.launch {
-            if (isBookmarked) bookmarkRepository.removeBookmark(url) else bookmarkRepository.addBookmark(article)
-        }
+        setBookmarked(article, saved = article.url !in uiState.value.bookmarkedUrls)
+    }
+
+    private fun rememberActiveQuery() {
+        val toRemember = activeQuery
+        if (toRemember.length < MIN_QUERY_LENGTH) return
+        viewModelScope.launch { recentSearchRepository.addRecentSearch(toRemember) }
     }
 
     private fun applyQuery(value: String) {

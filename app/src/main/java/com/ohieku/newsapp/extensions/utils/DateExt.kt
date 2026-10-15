@@ -2,8 +2,9 @@ package com.ohieku.newsapp.extensions.utils
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
-import java.util.concurrent.TimeUnit
+import java.util.TimeZone
 
 private val FRACTIONAL_SECONDS = Regex("""\.\d+""")
 
@@ -25,24 +26,33 @@ fun parsePublishedAt(value: String?): Long? {
     }
 }
 
-/** How long ago a story was published, bucketed for the running order's compact time column. */
-sealed interface TimeAgo {
-    data object JustNow : TimeAgo
-    data class Minutes(val count: Long) : TimeAgo
-    data class Hours(val count: Long) : TimeAgo
-    data class Days(val count: Long) : TimeAgo
-    data class OnDate(val millis: Long) : TimeAgo
+/** The calendar day a story belongs to, for the feed's day headers and the time column. */
+sealed interface StoryDay {
+    data object Today : StoryDay
+    data object Yesterday : StoryDay
+    /** [startOfDay] is the local midnight that opens that day, so stories on the same day compare equal. */
+    data class OnDate(val startOfDay: Long) : StoryDay
 }
 
-fun timeAgo(publishedAtMillis: Long, nowMillis: Long): TimeAgo {
-    // Clock skew can put a story slightly in the future; treat it as just published
-    val elapsed = (nowMillis - publishedAtMillis).coerceAtLeast(0)
+fun storyDay(publishedMillis: Long, nowMillis: Long, timeZone: TimeZone = TimeZone.getDefault()): StoryDay {
+    val startOfToday = startOfDay(nowMillis, timeZone)
+    // Calendar arithmetic rather than a fixed 24h, so a daylight-saving change can't shift "yesterday"
+    val startOfYesterday = Calendar.getInstance(timeZone).apply {
+        timeInMillis = startOfToday
+        add(Calendar.DAY_OF_YEAR, -1)
+    }.timeInMillis
     return when {
-        elapsed < TimeUnit.MINUTES.toMillis(1) -> TimeAgo.JustNow
-        elapsed < TimeUnit.HOURS.toMillis(1) -> TimeAgo.Minutes(TimeUnit.MILLISECONDS.toMinutes(elapsed))
-        // Hours run to 48 so the free plan's day-old headlines still read in order ("26h", "31h"), not all "1d"
-        elapsed < TimeUnit.HOURS.toMillis(48) -> TimeAgo.Hours(TimeUnit.MILLISECONDS.toHours(elapsed))
-        elapsed < TimeUnit.DAYS.toMillis(7) -> TimeAgo.Days(TimeUnit.MILLISECONDS.toDays(elapsed))
-        else -> TimeAgo.OnDate(publishedAtMillis)
+        // Clock skew can put a story slightly in the future; it still belongs to today
+        publishedMillis >= startOfToday -> StoryDay.Today
+        publishedMillis >= startOfYesterday -> StoryDay.Yesterday
+        else -> StoryDay.OnDate(startOfDay(publishedMillis, timeZone))
     }
 }
+
+private fun startOfDay(millis: Long, timeZone: TimeZone): Long = Calendar.getInstance(timeZone).apply {
+    timeInMillis = millis
+    set(Calendar.HOUR_OF_DAY, 0)
+    set(Calendar.MINUTE, 0)
+    set(Calendar.SECOND, 0)
+    set(Calendar.MILLISECOND, 0)
+}.timeInMillis

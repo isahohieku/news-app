@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 class ArticlePager(
     private val scope: CoroutineScope,
     initialState: PagedArticles = PagedArticles(),
+    private val now: () -> Long = System::currentTimeMillis,
     private val loadPage: suspend (page: Int) -> ResourceState<NewsModel>,
 ) {
     private val _state = MutableStateFlow(initialState)
@@ -92,6 +93,7 @@ class ArticlePager(
                             articles = existing.appendDistinct(newArticles),
                             currentPage = page,
                             endReached = newArticles.isEmpty(),
+                            loadedAt = if (page == 1) now() else currentState.loadedAt,
                         )
                     }
                 }

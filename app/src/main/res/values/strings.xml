@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">News App</string>
+    <string name="app_name">Central News</string>
     <string name="app_title">Central News</string>
     <!-- Initials in the red box of the wordmark -->
     <string name="brand_mark">CN</string>
@@ -18,7 +18,7 @@
     <string name="no_browser_found">No app can open this link</string>
 
     <string name="error_no_internet">You\'re offline</string>
-    <string name="error_no_internet_body">Check your connection and try again. Your saved stories are still here.</string>
+    <string name="error_no_internet_body">Check your connection and try again. Your saved list is still here.</string>
     <string name="error_timeout">That took too long</string>
     <string name="error_timeout_body">The news service is slow right now. Try again in a moment.</string>
     <string name="error_cannot_connect">Can\'t reach the news service</string>
@@ -36,9 +36,13 @@
     <string name="search">Search</string>
     <string name="back">Back</string>
     <string name="clear_search">Clear search</string>
-    <string name="search_placeholder">Search news</string>
-    <string name="search_hint_title">Search the news</string>
-    <string name="search_hint_body">Find stories by topic, person or place.</string>
+    <string name="search_placeholder">Topic, person or place</string>
+    <string name="search_recent">Recent searches</string>
+    <string name="search_clear_recent">Clear</string>
+    <string name="search_browse">Browse a category</string>
+    <string name="search_sort_relevant">Most relevant</string>
+    <string name="search_sort_latest">Latest</string>
+    <string name="browse_top_stories">Browse top stories</string>
     <string name="search_no_results">No results for “%1$s”</string>
     <string name="search_no_results_body">Try different or fewer words.</string>
 
@@ -46,7 +50,7 @@
     <string name="nav_saved">Saved</string>
     <string name="bookmarks_title">Saved</string>
     <string name="bookmarks_empty_title">Nothing saved yet</string>
-    <string name="bookmarks_empty_body">Tap the bookmark on any story to keep it here, even offline.</string>
+    <string name="bookmarks_empty_body">Tap the bookmark on any story to keep it here.</string>
     <string name="bookmark_add">Save article</string>
     <string name="bookmark_remove">Remove from saved</string>
     <string name="bookmark_saved">Saved</string>
@@ -54,11 +58,23 @@
     <string name="bookmark_view">View</string>
     <string name="undo">Undo</string>
 
-    <!-- Compact times for the running order's time column -->
-    <string name="time_just_now">Now</string>
-    <string name="time_minutes_short">%1$dm</string>
-    <string name="time_hours_short">%1$dh</string>
-    <string name="time_days_short">%1$dd</string>
-    <!-- The lead photo's time bug, in the same units as the time column -->
-    <string name="time_bug">%1$s ago</string>
+    <string name="open_offline">You\'re offline. Connect to open this story.</string>
+
+    <!-- Day headers in the feed; the first one names the bulletin and when it was fetched -->
+    <string name="day_today">Today</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="feed_header_today">Today\'s %1$s</string>
+    <string name="feed_header_yesterday">Yesterday\'s %1$s</string>
+    <string name="feed_header_date">%1$s from %2$s</string>
+    <string name="feed_header_as_of">%1$s · as of %2$s</string>
+    <!-- Spoken time for TalkBack, e.g. "Yesterday, 2:06 PM" -->
+    <string name="spoken_story_time">%1$s, %2$s</string>
+
+    <string name="bulletin_top">top stories</string>
+    <string name="bulletin_business">business news</string>
+    <string name="bulletin_entertainment">entertainment news</string>
+    <string name="bulletin_health">health news</string>
+    <string name="bulletin_science">science news</string>
+    <string name="bulletin_sports">sports news</string>
+    <string name="bulletin_technology">technology news</string>
 </resources>

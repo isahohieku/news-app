@@ -6,6 +6,7 @@ import com.ohieku.newsapp.data.network.ErrorType
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
+import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import com.ohieku.newsapp.domain.features.news.usecase.GetNewsUseCase
 import com.ohieku.newsapp.fakes.FakeBookmarkRepository
@@ -39,7 +40,7 @@ class HomeViewModelTest {
             return results.removeFirst()
         }
 
-        override suspend fun searchNews(query: String, page: Int): ResourceState<NewsModel> = error("Not used")
+        override suspend fun searchNews(query: String, sort: SearchSort, page: Int): ResourceState<NewsModel> = error("Not used")
     }
 
     private val repository = FakeNewsRepository()
@@ -328,5 +329,20 @@ class HomeViewModelTest {
 
         assertTrue(viewModel.uiState.value.bookmarkedUrls.isEmpty())
         assertTrue(bookmarks.bookmarks.value.isEmpty())
+    }
+
+    @Test
+    fun `the first page records when the bulletin was fetched`() {
+        repository.results += success("a")
+        repository.results += success("b")
+        val viewModel = createViewModel()
+        val firstLoad = viewModel.uiState.value.feed.loadedAt
+
+        assertTrue(firstLoad != null)
+
+        viewModel.fetchNextPage()
+
+        // Later pages extend the same bulletin, so its "as of" time stays put
+        assertEquals(firstLoad, viewModel.uiState.value.feed.loadedAt)
     }
 }

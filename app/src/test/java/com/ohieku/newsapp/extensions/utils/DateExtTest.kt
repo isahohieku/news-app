@@ -3,6 +3,7 @@ package com.ohieku.newsapp.extensions.utils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.util.TimeZone
 
 class DateExtTest {
 
@@ -32,22 +33,28 @@ class DateExtTest {
         assertNull(parsePublishedAt("2026-10-13"))
     }
 
-    private val now = expected
+    private val utc = TimeZone.getTimeZone("UTC")
+
+    // 2026-10-14T09:00:00Z
+    private val now = 1791968400000L
+    private val hour = 3_600_000L
 
     @Test
-    fun `buckets elapsed time for the time column`() {
-        val minute = 60_000L
-        assertEquals(TimeAgo.JustNow, timeAgo(now - 30_000, now))
-        assertEquals(TimeAgo.Minutes(41), timeAgo(now - 41 * minute, now))
-        assertEquals(TimeAgo.Hours(23), timeAgo(now - (23 * 60 + 59) * minute, now))
-        assertEquals(TimeAgo.Hours(47), timeAgo(now - (47 * 60 + 59) * minute, now))
-        assertEquals(TimeAgo.Days(2), timeAgo(now - 48 * 60 * minute, now))
-        assertEquals(TimeAgo.Days(6), timeAgo(now - 6 * 24 * 60 * minute, now))
-        assertEquals(TimeAgo.OnDate(now - 8 * 24 * 60 * minute), timeAgo(now - 8 * 24 * 60 * minute, now))
+    fun `stories are grouped by calendar day`() {
+        assertEquals(StoryDay.Today, storyDay(now - 8 * hour, now, utc))
+        assertEquals(StoryDay.Yesterday, storyDay(now - 10 * hour, now, utc))
+        assertEquals(StoryDay.Yesterday, storyDay(now - 33 * hour, now, utc))
+        // 2026-10-12T15:00:00Z belongs to Oct 12, whose midnight is 2026-10-12T00:00:00Z
+        assertEquals(StoryDay.OnDate(1791763200000L), storyDay(now - 42 * hour, now, utc))
     }
 
     @Test
-    fun `a story from the near future counts as just published`() {
-        assertEquals(TimeAgo.JustNow, timeAgo(now + 90_000, now))
+    fun `stories on the same earlier day share one day`() {
+        assertEquals(storyDay(now - 40 * hour, now, utc), storyDay(now - 50 * hour, now, utc))
+    }
+
+    @Test
+    fun `a story from the near future belongs to today`() {
+        assertEquals(StoryDay.Today, storyDay(now + 90_000, now, utc))
     }
 }

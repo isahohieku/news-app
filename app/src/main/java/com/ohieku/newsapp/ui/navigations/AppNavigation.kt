@@ -3,9 +3,9 @@ package com.ohieku.newsapp.ui.navigations
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.HorizontalDivider
@@ -32,10 +32,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ohieku.newsapp.R
+import com.ohieku.newsapp.domain.features.news.model.NewsCategory
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ohieku.newsapp.ui.compose.theme.LocalNewsColors
 import com.ohieku.newsapp.ui.bookmarks.compose.renderBookmarksScreen
 import com.ohieku.newsapp.ui.home.compose.renderHomeScreen
 import com.ohieku.newsapp.ui.search.compose.renderSearchScreen
+
+private const val REQUESTED_CATEGORY_KEY = "requested_category"
 
 private enum class TopLevelDestination(
     val route: String,
@@ -44,7 +48,7 @@ private enum class TopLevelDestination(
     val unselectedIcon: ImageVector,
 ) {
     Home(Routes.HOME_SCREEN, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
-    Saved(Routes.BOOKMARKS_SCREEN, R.string.nav_saved, Icons.Filled.Bookmarks, Icons.Outlined.Bookmarks),
+    Saved(Routes.BOOKMARKS_SCREEN, R.string.nav_saved, Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder),
 }
 
 @Composable
@@ -81,17 +85,29 @@ fun AppNavigationGraph(navController: NavHostController) {
             startDestination = Routes.HOME_SCREEN,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(Routes.HOME_SCREEN) {
+            composable(Routes.HOME_SCREEN) { entry ->
+                val requestedCategory by entry.savedStateHandle
+                    .getStateFlow<String?>(REQUESTED_CATEGORY_KEY, null)
+                    .collectAsStateWithLifecycle()
                 renderHomeScreen(
                     onSearchTapped = { navController.navigate(Routes.SEARCH_SCREEN) },
                     onOpenSaved = { openTab(TopLevelDestination.Saved) },
-                    scrollToTopSignal = homeReselections
+                    scrollToTopSignal = homeReselections,
+                    requestedCategory = requestedCategory?.let { name ->
+                        NewsCategory.entries.firstOrNull { it.name == name }
+                    },
+                    onRequestedCategoryHandled = { entry.savedStateHandle[REQUESTED_CATEGORY_KEY] = null }
                 )
             }
             composable(Routes.SEARCH_SCREEN) {
                 renderSearchScreen(
                     onBackTapped = { navController.popBackStack() },
-                    onOpenSaved = { openTab(TopLevelDestination.Saved) }
+                    onOpenSaved = { openTab(TopLevelDestination.Saved) },
+                    onBrowseCategory = { category ->
+                        // Hand the category back to Home, which switches to it on return
+                        navController.previousBackStackEntry?.savedStateHandle?.set(REQUESTED_CATEGORY_KEY, category.name)
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(Routes.BOOKMARKS_SCREEN) {

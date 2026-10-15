@@ -1,5 +1,6 @@
 package com.ohieku.newsapp.ui.home.compose
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
@@ -18,11 +19,25 @@ import com.ohieku.newsapp.R
 import com.ohieku.newsapp.domain.features.news.model.Article
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.ui.common.messageRes
+import com.ohieku.newsapp.ui.common.rememberArticleOpener
 import com.ohieku.newsapp.ui.common.rememberBookmarkFeedback
 import com.ohieku.newsapp.ui.compose.components.CategoryTabs
 import com.ohieku.newsapp.ui.compose.components.MainScaffold
 import com.ohieku.newsapp.ui.compose.theme.NewsAppTheme
 import com.ohieku.newsapp.ui.home.HomeUiState
+
+/** What the first header calls this bulletin: "Yesterday's top stories", "Today's business news". */
+@get:StringRes
+private val NewsCategory.bulletinRes: Int
+    get() = when (this) {
+        NewsCategory.Top -> R.string.bulletin_top
+        NewsCategory.Business -> R.string.bulletin_business
+        NewsCategory.Entertainment -> R.string.bulletin_entertainment
+        NewsCategory.Health -> R.string.bulletin_health
+        NewsCategory.Science -> R.string.bulletin_science
+        NewsCategory.Sports -> R.string.bulletin_sports
+        NewsCategory.Technology -> R.string.bulletin_technology
+    }
 
 @Composable
 internal fun HomeScreen(
@@ -42,6 +57,7 @@ internal fun HomeScreen(
     val refreshErrorMessage = state.feed.refreshError?.let { stringResource(it.messageRes()) }
     // Each category starts at its own top rather than inheriting the previous one's scroll position
     val listState = rememberSaveable(state.category, saver = LazyListState.Saver) { LazyListState() }
+    val openArticle = rememberArticleOpener(snackbarHostState, onArticleTapped)
     val onBookmarkTapped = rememberBookmarkFeedback(
         snackbarHostState = snackbarHostState,
         bookmarkedUrls = state.bookmarkedUrls,
@@ -77,8 +93,9 @@ internal fun HomeScreen(
             bookmarkedUrls = state.bookmarkedUrls,
             onFetchNextPage = onFetchNextPageTapped,
             onRetry = onRetryTapped,
-            onArticleTapped = onArticleTapped,
+            onArticleTapped = openArticle,
             onBookmarkTapped = onBookmarkTapped,
+            bulletinName = stringResource(state.category.bulletinRes),
             listState = listState,
             onRefresh = onRefresh,
             onOpenSaved = onOpenSaved,

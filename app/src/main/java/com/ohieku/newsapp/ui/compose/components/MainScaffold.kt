@@ -1,6 +1,15 @@
 package com.ohieku.newsapp.ui.compose.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -53,6 +62,43 @@ fun Wordmark() {
     }
 }
 
+/**
+ * Snackbar in the broadcast system: a square, flat bar (no Material rounding or shadow) with a coral action
+ * that clears AA in both themes.
+ */
+@Composable
+fun NewsSnackbar(data: SnackbarData) {
+    val colors = LocalNewsColors.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .background(colors.snackbar)
+            .border(1.dp, colors.snackbarEdge)
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .padding(start = 16.dp, end = 4.dp)
+    ) {
+        Text(
+            text = data.visuals.message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.onSnackbar,
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+        )
+        data.visuals.actionLabel?.let { label ->
+            TextButton(
+                onClick = { data.performAction() },
+                colors = ButtonDefaults.textButtonColors(contentColor = colors.snackbarAction)
+            ) {
+                Text(label)
+            }
+        }
+    }
+}
+
 /** A screen title in the same voice as the wordmark. */
 @Composable
 fun ScreenTitle(text: String) {
@@ -73,7 +119,7 @@ fun MainScaffold(
     val colors = LocalNewsColors.current
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> NewsSnackbar(data) } },
         topBar = {
             Column(modifier = Modifier.background(colors.chrome)) {
                 TopAppBar(

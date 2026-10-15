@@ -2,17 +2,16 @@ package com.ohieku.newsapp.ui.compose.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -34,7 +33,7 @@ import com.ohieku.newsapp.ui.compose.theme.LocalNewsColors
 import com.ohieku.newsapp.ui.compose.theme.NewsAppTheme
 
 @get:StringRes
-private val NewsCategory.labelRes: Int
+val NewsCategory.labelRes: Int
     get() = when (this) {
         NewsCategory.Top -> R.string.category_top
         NewsCategory.Business -> R.string.category_business
@@ -71,10 +70,8 @@ fun CategoryTabs(
     LazyRow(
         state = listState,
         contentPadding = PaddingValues(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
             .background(colors.chrome)
             .selectableGroup()
     ) {
@@ -83,22 +80,24 @@ fun CategoryTabs(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxHeight()
+                    // Short labels like "Top" still get a full 48dp target, at any system font size
+                    .widthIn(min = 48.dp)
                     .selectable(selected = selected, role = Role.Tab, onClick = { onCategorySelected(category) })
                     .padding(horizontal = 12.dp)
             ) {
+                // Spacing sums to 48dp at the default font size and grows with enlarged text instead of clipping it
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxHeight().width(IntrinsicSize.Max)
+                    modifier = Modifier.width(IntrinsicSize.Max)
                 ) {
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(14.dp))
                     Text(
                         text = stringResource(category.labelRes),
                         style = MaterialTheme.typography.titleSmall,
                         color = if (selected) colors.onChrome else colors.onChromeMuted,
                         maxLines = 1
                     )
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(13.dp))
                     Box(
                         Modifier
                             .fillMaxWidth()

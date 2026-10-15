@@ -15,7 +15,9 @@ data class PagedArticles(
     // Last page loaded successfully; 0 means nothing has loaded yet
     val currentPage: Int = 0,
     // NewsAPI pages hold fewer articles than totalResults suggests, so an empty page marks the end
-    val endReached: Boolean = false
+    val endReached: Boolean = false,
+    // When the first page last arrived; shown as "as of" so day-old headlines are admitted plainly
+    val loadedAt: Long? = null
 ) {
     val hasMorePages: Boolean
         get() = !endReached && (currentPage == 0 || articles.size < totalResults)
