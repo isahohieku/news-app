@@ -9,6 +9,7 @@ import com.ohieku.newsapp.data.features.news.model.NewsDto
 import com.ohieku.newsapp.data.network.ApiResponseHandler
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
+import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -38,15 +39,17 @@ class NewsRepositoryImplementationTest {
         }
 
         val searches = mutableListOf<Triple<String, String?, Int>>()
+        val sorts = mutableListOf<String>()
 
         override suspend fun searchNews(
             query: String,
             language: String?,
             page: Int,
-            pageSize: Int,
-            sortBy: String
+            sortBy: String,
+            pageSize: Int
         ): Response<NewsDto> {
             searches += Triple(query, language, page)
+            sorts += sortBy
             return Response.success(news(1))
         }
     }
@@ -154,7 +157,7 @@ class NewsRepositoryImplementationTest {
     fun `search uses the device language when NewsAPI supports it`() = runTest {
         Locale.setDefault(Locale.GERMANY)
 
-        repository.searchNews("klima", 2)
+        repository.searchNews("klima", SearchSort.Relevance, 2)
 
         assertEquals(listOf(Triple("klima", "de", 2)), api.searches)
     }
@@ -163,7 +166,7 @@ class NewsRepositoryImplementationTest {
     fun `search covers every language when the device language is unsupported`() = runTest {
         Locale.setDefault(Locale("yo", "NG"))
 
-        repository.searchNews("news", 1)
+        repository.searchNews("news", SearchSort.Relevance, 1)
 
         assertEquals(listOf(Triple("news", null, 1)), api.searches)
     }
@@ -172,8 +175,18 @@ class NewsRepositoryImplementationTest {
     fun `hebrew is sent as he whichever code the locale reports`() = runTest {
         Locale.setDefault(Locale("he", "IL"))
 
-        repository.searchNews("news", 1)
+        repository.searchNews("news", SearchSort.Relevance, 1)
 
         assertEquals("he", api.searches.single().second)
+    }
+
+    @Test
+    fun `search sends the chosen sort order`() = runTest {
+        Locale.setDefault(Locale.US)
+
+        repository.searchNews("news", SearchSort.Relevance, 1)
+        repository.searchNews("news", SearchSort.Latest, 1)
+
+        assertEquals(listOf("relevancy", "publishedAt"), api.sorts)
     }
 }

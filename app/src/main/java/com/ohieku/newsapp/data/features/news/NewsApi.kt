@@ -19,8 +19,8 @@ interface NewsApi {
         @Query("q") query: String,
         @Query("language") language: String?,
         @Query("page") page: Int,
+        @Query("sortBy") sortBy: String,
         @Query("pageSize") pageSize: Int = SEARCH_PAGE_SIZE,
-        @Query("sortBy") sortBy: String = "publishedAt",
     ): Response<NewsDto>
 
     companion object {

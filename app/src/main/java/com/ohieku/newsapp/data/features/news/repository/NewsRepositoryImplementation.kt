@@ -7,6 +7,7 @@ import com.ohieku.newsapp.data.features.news.datasource.NewsDataSource
 import com.ohieku.newsapp.data.network.ApiException
 import com.ohieku.newsapp.domain.features.news.model.NewsCategory
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
+import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import javax.inject.Inject
 
@@ -37,14 +38,14 @@ class NewsRepositoryImplementation @Inject constructor(
         return result
     }
 
-    override suspend fun searchNews(query: String, page: Int): ResourceState<NewsModel> {
+    override suspend fun searchNews(query: String, sort: SearchSort, page: Int): ResourceState<NewsModel> {
         // Without a language NewsAPI mixes every language; unsupported device languages search them all
         val deviceLanguage = when (val language = localeProvider.getDefaultLocale().language) {
             "iw" -> "he" // Older Java locales still report Hebrew under its legacy code
             else -> language
         }
         val language = deviceLanguage.takeIf { it in SEARCH_LANGUAGES }
-        return newsDataSource.searchNews(query, language, page).endOfResultsAsEmpty()
+        return newsDataSource.searchNews(query, language, sort.apiValue, page).endOfResultsAsEmpty()
     }
 
     private suspend fun fetch(country: String, category: NewsCategory, page: Int): ResourceState<NewsModel> {

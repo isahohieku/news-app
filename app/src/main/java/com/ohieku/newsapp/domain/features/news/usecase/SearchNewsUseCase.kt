@@ -2,6 +2,7 @@ package com.ohieku.newsapp.domain.features.news.usecase
 
 import com.ohieku.newsapp.data.common.ResourceState
 import com.ohieku.newsapp.domain.features.news.model.NewsModel
+import com.ohieku.newsapp.domain.features.news.model.SearchSort
 import com.ohieku.newsapp.domain.features.news.repository.NewsRepository
 import javax.inject.Inject
 
@@ -10,8 +11,9 @@ class SearchNewsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         query: String,
+        sort: SearchSort,
         page: Int
     ): ResourceState<NewsModel> {
-        return newsRepository.searchNews(query, page)
+        return newsRepository.searchNews(query, sort, page)
     }
 }
